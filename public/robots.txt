@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hipermidia.andrehonorato.com.br/sitemap-index.xml

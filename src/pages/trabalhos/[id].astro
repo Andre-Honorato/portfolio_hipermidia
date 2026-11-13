@@ -1,0 +1,313 @@
+---
+import { render } from 'astro:content';
+import {
+  ArrowRight,
+  CalendarDays,
+  Clapperboard,
+  Clock,
+  FileText,
+  Headphones,
+  ListOrdered,
+  Play,
+  Plus,
+  Users,
+  Wrench,
+} from 'lucide-react';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import Player from '../../components/Player.astro';
+import WorkCard from '../../components/WorkCard.astro';
+import {
+  dataCompleta,
+  duracaoExtenso,
+  listarTrabalhos,
+  numeroFormatado,
+  rotuloTipo,
+  urlTrabalho,
+  type Trabalho,
+} from '../../lib/trabalhos';
+import { trabalhoLd, trilhaLd } from '../../lib/seo';
+import { softwarePorNome } from '../../data/site';
+
+export async function getStaticPaths() {
+  const trabalhos = await listarTrabalhos();
+  return trabalhos.map((trabalho) => ({
+    params: { id: trabalho.id },
+    props: { trabalho, outros: trabalhos.filter((t) => t.id !== trabalho.id) },
+  }));
+}
+
+interface Props {
+  trabalho: Trabalho;
+  outros: Trabalho[];
+}
+
+const { trabalho, outros } = Astro.props;
+const { Content, headings } = await render(trabalho);
+const { numero, titulo, resumo, tipo, data, duracao, ferramentas, equipe, transcricao, midia } = trabalho.data;
+const n = numeroFormatado(numero);
+const IconeTipo = tipo === 'video' ? Clapperboard : Headphones;
+const verbo = tipo === 'video' ? 'Assistir agora' : 'Ouvir agora';
+
+const secoes = [
+  ...headings.filter((h) => h.depth === 2).map((h) => ({ slug: h.slug, texto: h.text })),
+  ...(transcricao ? [{ slug: 'transcricao', texto: 'Transcrição' }] : []),
+];
+
+const ficha = [
+  { rotulo: 'Formato', valor: rotuloTipo[tipo], icone: IconeTipo },
+  { rotulo: 'Duração', valor: duracaoExtenso(duracao), icone: Clock },
+  { rotulo: 'Entrega', valor: dataCompleta(data), icone: CalendarDays },
+  { rotulo: equipe.length > 1 ? 'Equipe' : 'Autoria', valor: equipe.join(' e '), icone: Users },
+];
+---
+
+<BaseLayout
+  titulo={titulo}
+  descricao={resumo}
+  imagem={midia.poster}
+  tipoOg={tipo === 'video' ? 'video.other' : 'music.song'}
+  ativo="Trabalhos"
+  jsonLd={[
+    trabalhoLd(trabalho),
+    trilhaLd([
+      { rotulo: 'Início', caminho: '/' },
+      { rotulo: 'Trabalhos', caminho: '/trabalhos/' },
+      { rotulo: titulo, caminho: urlTrabalho(trabalho) },
+    ]),
+  ]}
+>
+  <div class="reading-progress" aria-hidden="true"></div>
+
+  <article aria-labelledby="titulo-trabalho">
+    <!-- ============ Abertura ============ -->
+    <header class="frame pt-6 sm:pt-10">
+      <div class="panel halo panel-pad">
+        <div class="grid grid-cols-1 gap-10 lg:grid-cols-[1.1fr_1fr] items-center">
+          <div class="flex flex-col items-start gap-5">
+            <Breadcrumb
+              passos={[
+                { rotulo: 'Início', href: '/' },
+                { rotulo: 'Trabalhos', href: '/trabalhos/' },
+                { rotulo: `Trabalho ${n}` },
+              ]}
+            />
+            <div class="flex flex-wrap gap-2" data-aos="fade-up">
+              <span class="chip">
+                <IconeTipo className="w-3.5 h-3.5 text-accent-text" strokeWidth={2} aria-hidden="true" />
+                {rotuloTipo[tipo]}
+              </span>
+              <span class="chip">
+                <Clock className="w-3.5 h-3.5 text-accent-text" strokeWidth={2} aria-hidden="true" />
+                <span aria-hidden="true">{duracao}</span>
+                <span class="sr-only">{duracaoExtenso(duracao)}</span>
+              </span>
+              <span class="chip">
+                <CalendarDays className="w-3.5 h-3.5 text-accent-text" strokeWidth={2} aria-hidden="true" />
+                {dataCompleta(data)}
+              </span>
+            </div>
+            <h1 id="titulo-trabalho" class="t-hero" data-aos="fade-up" data-aos-delay="80">{titulo}</h1>
+            <p class="t-lead max-w-[34rem]" data-aos="fade-up" data-aos-delay="140">{resumo}</p>
+            <div class="flex flex-wrap gap-3 pt-1" data-aos="fade-up" data-aos-delay="200">
+              <a href="#player" class="group btn btn-primary btn-lg">
+                <Play className="w-4 h-4 fill-current" strokeWidth={1.75} aria-hidden="true" />
+                {verbo}
+              </a>
+              {
+                transcricao && (
+                  <a href="#transcricao" class="group btn btn-secondary btn-lg">
+                    <FileText className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" />
+                    Ler transcrição
+                  </a>
+                )
+              }
+            </div>
+          </div>
+
+          <!-- Ficha técnica: o que importa antes de dar o play -->
+          <div class="card p-2" data-aos="fade-up" data-aos-delay="120">
+            <h2 class="flex items-center justify-between gap-3 px-4 pt-3 pb-2 text-sm font-semibold">
+              Ficha técnica
+              <span class="tc text-accent-text">Nº {n}</span>
+            </h2>
+            <dl class="grid grid-cols-2 gap-1.5">
+              {
+                ficha.map((item) => {
+                  const Icone = item.icone;
+                  return (
+                    <div class="tile flex items-center gap-3 p-3">
+                      <span class="icon-box w-9 h-9">
+                        <Icone className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" />
+                      </span>
+                      <div class="min-w-0">
+                        <dt class="text-xs text-ink-soft">{item.rotulo}</dt>
+                        <dd class="text-sm font-medium leading-snug">{item.valor}</dd>
+                      </div>
+                    </div>
+                  );
+                })
+              }
+            </dl>
+            {
+              ferramentas.length > 0 && (
+                <div class="px-3 pt-4 pb-3">
+                  <p class="flex items-center gap-2 text-xs text-ink-soft">
+                    <Wrench className="w-3.5 h-3.5" strokeWidth={2} aria-hidden="true" />
+                    Ferramentas
+                  </p>
+                  <ul class="mt-2 flex flex-wrap gap-1.5" aria-label="Ferramentas usadas">
+                    {ferramentas.map((ferramenta) => {
+                      const sw = softwarePorNome(ferramenta);
+                      return sw ? (
+                        <li>
+                          <a
+                            href="/#ferramentas"
+                            class="chip pl-1 border border-hairline bg-surface hover:border-hairline-strong transition-colors"
+                            title={`Sobre o ${sw.nome}`}
+                          >
+                            <img src={sw.logo} alt="" width="22" height="22" class="w-[1.375rem] h-[1.375rem]" />
+                            {sw.nome}
+                          </a>
+                        </li>
+                      ) : (
+                        <li class="chip">{ferramenta}</li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )
+            }
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============ Player ============ -->
+    <section id="player" aria-label={tipo === 'video' ? 'Player de vídeo' : 'Player de áudio'} class="frame mt-4 scroll-mt-24">
+      <Player trabalho={trabalho} />
+    </section>
+
+    <!-- ============ Conteúdo ============ -->
+    <section aria-label="Sobre o trabalho" class="frame section">
+      <div class="grid grid-cols-1 gap-10 lg:grid-cols-[16rem_minmax(0,1fr)] lg:gap-x-16 2xl:gap-x-20">
+        <aside class="lg:row-span-2 lg:sticky lg:top-28 self-start flex flex-col gap-3" aria-label="Atalhos do trabalho">
+          {
+            secoes.length > 0 && (
+              <nav aria-labelledby="titulo-nesta-pagina" class="card p-4">
+                <h2 id="titulo-nesta-pagina" class="flex items-center gap-2 text-sm font-semibold px-2 pt-1">
+                  <ListOrdered className="w-4 h-4 text-accent-text" strokeWidth={2} aria-hidden="true" />
+                  Nesta página
+                </h2>
+                <ol class="mt-2 grid">
+                  {secoes.map((secao, i) => (
+                    <li>
+                      <a
+                        href={`#${secao.slug}`}
+                        class="toc-link group flex items-center gap-3 min-h-10 pl-3.5 pr-2 rounded-lg text-ink-soft hover:text-ink hover:bg-surface-2 transition-colors"
+                      >
+                        <span class="toc-num w-5 text-[0.6875rem] tabular-nums text-accent-text font-semibold">{numeroFormatado(i + 1)}</span>
+                        <span class="text-[0.9375rem]">{secao.texto}</span>
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </nav>
+            )
+          }
+        </aside>
+
+        <div class="min-w-0">
+          <div class="prose-doc" data-aos="fade-up">
+            <Content />
+          </div>
+        </div>
+
+          {
+            transcricao && (
+              <section
+                aria-labelledby="transcricao"
+                class="min-w-0 max-w-[72rem] lg:col-start-2 lg:mt-2 scroll-mt-28"
+              >
+                <h2 id="transcricao" class="font-semibold text-[clamp(1.5rem,2.6vw,1.875rem)] tracking-[-0.025em]">
+                  Transcrição
+                </h2>
+                <details class="group card mt-5 overflow-hidden">
+                  <summary class="flex items-center justify-between gap-4 p-4 min-h-16 font-medium">
+                    <span class="inline-flex items-center gap-3">
+                      <span class="icon-box">
+                        <FileText className="w-[1.125rem] h-[1.125rem]" strokeWidth={1.75} aria-hidden="true" />
+                      </span>
+                      <span class="group-open:hidden">Mostrar transcrição completa</span>
+                      <span class="hidden group-open:inline">Ocultar transcrição</span>
+                    </span>
+                    <span class="grid place-items-center w-8 h-8 rounded-lg bg-surface-2 shrink-0 transition-[transform,background-color,color] duration-500 ease-[var(--ease-out-soft)] group-open:rotate-45 group-open:bg-accent group-open:text-on-accent" aria-hidden="true">
+                      <Plus className="w-4 h-4" strokeWidth={2} />
+                    </span>
+                  </summary>
+                  <div class="px-5 pb-6 leading-relaxed text-ink-soft xl:columns-2 xl:gap-10 [&>p]:mb-4 [&>p]:break-inside-avoid">
+                    {transcricao
+                      .trim()
+                      .split(/\n\s*\n/)
+                      .map((paragrafo) => (
+                        <p>{paragrafo}</p>
+                      ))}
+                  </div>
+                </details>
+              </section>
+            )
+          }
+      </div>
+    </section>
+
+    <!-- ============ Continue explorando ============ -->
+    <nav aria-labelledby="titulo-outros" class="frame pb-8">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div data-aos="fade-up">
+          <p class="t-eyebrow">Próximos</p>
+          <h2 id="titulo-outros" class="t-h2 mt-3">Continue explorando</h2>
+        </div>
+        <a href="/trabalhos/" class="group btn btn-secondary" data-aos="fade-up">
+          Ver todos
+          <ArrowRight className="w-4 h-4 nudge-x" strokeWidth={1.75} aria-hidden="true" />
+        </a>
+      </div>
+      <ul class="grid gap-5 sm:grid-cols-2 mt-10" role="list">
+        {
+          outros.map((outro, i) => (
+            <li data-aos="fade-up" data-aos-delay={i * 90}>
+              <WorkCard trabalho={outro} />
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </article>
+</BaseLayout>
+
+<script>
+  // Destaca no menu "Nesta página" a seção que está sendo lida.
+  document.addEventListener('astro:page-load', () => {
+    const links = [...document.querySelectorAll<HTMLAnchorElement>('.toc-link')];
+    if (!links.length) return;
+    const porId = new Map(links.map((link) => [decodeURIComponent(link.hash.slice(1)), link]));
+    const secoes = [...porId.keys()].map((id) => document.getElementById(id)).filter((el): el is HTMLElement => !!el);
+
+    const marcar = (id: string) => {
+      links.forEach((link) => {
+        if (porId.get(id) === link) link.setAttribute('aria-current', 'true');
+        else link.removeAttribute('aria-current');
+      });
+    };
+
+    const observador = new IntersectionObserver(
+      (entradas) => {
+        const visivel = entradas.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (visivel) marcar(visivel.target.id);
+      },
+      { rootMargin: '-20% 0px -65% 0px' },
+    );
+    secoes.forEach((secao) => observador.observe(secao));
+    document.addEventListener('astro:before-swap', () => observador.disconnect(), { once: true });
+  });
+</script>

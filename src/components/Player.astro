@@ -1,0 +1,174 @@
+---
+import { Captions, Clapperboard, ExternalLink, Headphones, Maximize, Play, Volume2 } from 'lucide-react';
+import Art from './Art.astro';
+import { duracaoExtenso, numeroFormatado, rotuloTipo, type Trabalho } from '../lib/trabalhos';
+
+/**
+ * Player acessível. Vídeos do YouTube aparecem como uma fachada (capa +
+ * botão); o iframe do youtube-nocookie só carrega no clique, o que deixa a
+ * página leve e não chama o YouTube antes da hora. Áudio e vídeo servidos
+ * pelo site usam os controles nativos do navegador.
+ */
+interface Props {
+  trabalho: Trabalho;
+}
+
+const { trabalho } = Astro.props;
+// Mesmo nome da capa no card: o ClientRouter faz a capa "crescer" até o player.
+const { numero, titulo, tipo, duracao, midia, tom, arte } = trabalho.data;
+const legenda = `${rotuloTipo[tipo]} “${titulo}”, ${duracaoExtenso(duracao)}.`;
+const barras = Array.from({ length: 72 }, (_, i) => 0.18 + Math.abs(Math.sin(i * 0.42 + numero) * Math.cos(i * 0.13)) * 0.82);
+---
+
+<figure class="rounded-[var(--radius-panel)] bg-[#0b0b10] p-2 text-white shadow-[var(--shadow-lift)]" transition:name={`capa-${trabalho.id}`}>
+  {
+    tipo === 'video' ? (
+      midia.youtube ? (
+        <div class="yt-player relative overflow-hidden rounded-[calc(var(--radius-panel)-0.5rem)] aspect-video bg-black">
+          <button
+            type="button"
+            class="yt-facade group absolute inset-0 w-full h-full"
+            data-yt-id={midia.youtube}
+            data-yt-title={`${titulo} (YouTube)`}
+            aria-label={`Reproduzir o vídeo: ${titulo}`}
+          >
+            {midia.poster ? (
+              <img src={midia.poster} alt="" width="1600" height="900" class="zoom-media w-full h-full object-cover" />
+            ) : (
+              <Art tom={tom} arte={arte} />
+            )}
+            <span class="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" aria-hidden="true" />
+            <span
+              class="play-btn glass absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 grid place-items-center w-20 h-20 rounded-full"
+              aria-hidden="true"
+            >
+              <Play className="w-7 h-7 fill-current translate-x-[2px]" strokeWidth={1.5} />
+            </span>
+            <span class="absolute left-4 bottom-4 sm:left-6 sm:bottom-5 chip glass" aria-hidden="true">
+              <span class="tabular-nums">{duracao}</span> · YouTube
+            </span>
+          </button>
+        </div>
+      ) : midia.src ? (
+        <video
+          controls
+          playsinline
+          preload="metadata"
+          poster={midia.poster}
+          class="w-full aspect-video rounded-[calc(var(--radius-panel)-0.5rem)] bg-black"
+          aria-label={legenda}
+        >
+          <source src={midia.src} type="video/mp4" />
+          {midia.legendas && <track kind="captions" src={midia.legendas} srclang="pt-BR" label="Português" default />}
+          <p>
+            Seu navegador não reproduz vídeo. <a class="underline" href={midia.src}>Baixe o arquivo</a>.
+          </p>
+        </video>
+      ) : (
+        <div class="relative overflow-hidden rounded-[calc(var(--radius-panel)-0.5rem)] aspect-video" aria-hidden="true">
+          <Art tom={tom} arte={arte} />
+          <span class="glass absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 grid place-items-center w-20 h-20 rounded-full">
+            <Play className="w-7 h-7 fill-current translate-x-[2px]" strokeWidth={1.5} />
+          </span>
+          <div class="absolute inset-x-0 bottom-0 flex items-center gap-4 px-5 sm:px-7 py-4 bg-gradient-to-t from-black/70 to-transparent text-xs font-medium">
+            <span class="tabular-nums">00:00</span>
+            <span class="relative flex-1 h-1 rounded-full bg-white/25 overflow-hidden">
+              <span class="progress-fill absolute inset-0 rounded-full bg-white" />
+            </span>
+            <span class="tabular-nums">{duracao}</span>
+            <Volume2 className="w-4 h-4 hidden sm:block" strokeWidth={1.75} />
+            <Captions className="w-4 h-4 hidden sm:block" strokeWidth={1.75} />
+            <Maximize className="w-4 h-4 hidden sm:block" strokeWidth={1.75} />
+          </div>
+        </div>
+      )
+    ) : (
+      <div class="grid gap-5 sm:grid-cols-[minmax(0,14rem)_1fr] items-center p-2 sm:p-4">
+        <div class="relative overflow-hidden rounded-[var(--radius-card)] aspect-square" aria-hidden="true">
+          <Art tom={tom} arte={arte} />
+        </div>
+        <div class="flex flex-col gap-6 sm:pl-2 min-w-0">
+          <div class="flex items-center gap-3">
+            <span class="glass grid place-items-center w-11 h-11 rounded-xl shrink-0" aria-hidden="true">
+              <Headphones className="w-5 h-5" strokeWidth={1.75} />
+            </span>
+            <div class="min-w-0">
+              <p class="text-xs font-medium text-white/60">Trabalho {numeroFormatado(numero)} · Áudio</p>
+              <p class="font-semibold text-lg tracking-[-0.015em] truncate">{titulo}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-[3px] h-16" aria-hidden="true">
+            {barras.map((h, i) => (
+              <span
+                class="wave-bar flex-1 rounded-full bg-white"
+                style={`height:${Math.round(h * 100)}%;opacity:${i < 24 ? 0.95 : 0.35};--wave-delay:${-(i % 11) * 0.16}s`}
+              />
+            ))}
+          </div>
+          {
+            midia.src ? (
+              <audio controls preload="metadata" class="w-full" aria-label={legenda}>
+                <source src={midia.src} type="audio/mpeg" />
+                <p>
+                  Seu navegador não reproduz áudio. <a class="underline" href={midia.src}>Baixe o arquivo</a>.
+                </p>
+              </audio>
+            ) : (
+              <div class="flex items-center gap-3 text-xs font-medium text-white/75" aria-hidden="true">
+                <span class="glass grid place-items-center w-10 h-10 rounded-full">
+                  <Play className="w-4 h-4 fill-current translate-x-[1px]" strokeWidth={1.5} />
+                </span>
+                <span class="tabular-nums">00:00</span>
+                <span class="relative flex-1 h-1 rounded-full bg-white/20 overflow-hidden">
+                  <span class="progress-fill absolute inset-0 rounded-full bg-white" />
+                </span>
+                <span class="tabular-nums">{duracao}</span>
+              </div>
+            )
+          }
+        </div>
+      </div>
+    )
+  }
+  <figcaption class="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 px-3 pt-3 pb-1.5 text-sm text-white/70">
+    <span class="inline-flex items-center gap-2">
+      {tipo === 'video' ? <Clapperboard className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" /> : <Headphones className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" />}
+      {legenda}
+    </span>
+    {
+      midia.youtube ? (
+        <a
+          href={`https://www.youtube.com/watch?v=${midia.youtube}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1.5 min-h-11 text-white/85 hover:text-white transition-colors"
+        >
+          Abrir no YouTube
+          <span class="sr-only">(abre em nova aba)</span>
+          <ExternalLink className="w-3.5 h-3.5" strokeWidth={2} aria-hidden="true" />
+        </a>
+      ) : (
+        !midia.src && <span class="chip glass">Mídia provisória: arquivo em breve</span>
+      )
+    }
+  </figcaption>
+</figure>
+
+<script>
+  // Troca a fachada pelo iframe do YouTube no clique (delegado: funciona após trocas de página).
+  document.addEventListener('click', (evento) => {
+    const botao = (evento.target as Element | null)?.closest<HTMLButtonElement>('.yt-facade');
+    if (!botao) return;
+    const id = botao.dataset.ytId;
+    if (!id) return;
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0&cc_load_policy=1&hl=pt-BR`;
+    iframe.title = botao.dataset.ytTitle ?? 'Vídeo do YouTube';
+    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+    iframe.allowFullscreen = true;
+    iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+    iframe.className = 'absolute inset-0 w-full h-full';
+    botao.replaceWith(iframe);
+    iframe.focus();
+  });
+</script>

@@ -1,0 +1,52 @@
+---
+import { Clapperboard, Clock, Headphones } from 'lucide-react';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import WorkCard from '../../components/WorkCard.astro';
+import { site } from '../../data/site';
+import { listarTrabalhos, minutosTotais } from '../../lib/trabalhos';
+import { colecaoLd, trilhaLd } from '../../lib/seo';
+
+const trabalhos = await listarTrabalhos();
+const videos = trabalhos.filter((t) => t.data.tipo === 'video').length;
+---
+
+<BaseLayout
+  titulo="Trabalhos"
+  descricao={`Todos os trabalhos em vídeo e áudio de ${site.autor} na disciplina ${site.disciplina} (${site.instituicaoSigla}).`}
+  ativo="Trabalhos"
+  jsonLd={[
+    colecaoLd(trabalhos, '/trabalhos/'),
+    trilhaLd([
+      { rotulo: 'Início', caminho: '/' },
+      { rotulo: 'Trabalhos', caminho: '/trabalhos/' },
+    ]),
+  ]}
+>
+  <header class="frame pt-6 sm:pt-10">
+    <div class="panel halo panel-pad flex flex-col items-start gap-5">
+      <Breadcrumb passos={[{ rotulo: 'Início', href: '/' }, { rotulo: 'Trabalhos' }]} />
+      <h1 class="t-hero" data-aos="fade-up">Todos os trabalhos</h1>
+      <p class="t-lead max-w-[34rem]" data-aos="fade-up" data-aos-delay="80">
+        Produções em vídeo e áudio da disciplina {site.disciplina}, em ordem de entrega.
+      </p>
+      <div class="flex flex-wrap gap-2" data-aos="fade-up" data-aos-delay="140">
+        <span class="chip"><Clapperboard className="w-3.5 h-3.5 text-accent-text" strokeWidth={2} aria-hidden="true" />{videos} vídeos</span>
+        <span class="chip"><Headphones className="w-3.5 h-3.5 text-accent-text" strokeWidth={2} aria-hidden="true" />{trabalhos.length - videos} áudio</span>
+        <span class="chip"><Clock className="w-3.5 h-3.5 text-accent-text" strokeWidth={2} aria-hidden="true" />{minutosTotais(trabalhos)} min no total</span>
+      </div>
+    </div>
+  </header>
+
+  <section aria-label="Lista de trabalhos" class="frame section !pt-10">
+    <ul class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" role="list">
+      {
+        trabalhos.map((trabalho, i) => (
+          <li data-aos="fade-up" data-aos-delay={i * 90}>
+            <WorkCard trabalho={trabalho} nivelTitulo="h2" />
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</BaseLayout>

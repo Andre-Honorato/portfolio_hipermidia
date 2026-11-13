@@ -1,0 +1,133 @@
+---
+import { Play } from 'lucide-react';
+import Art from './Art.astro';
+import { numeroFormatado, paletaTom, rotuloTipo, urlTrabalho, type Trabalho } from '../lib/trabalhos';
+
+/**
+ * Abertura da home em forma de ilha de edição: visor com o trabalho em
+ * destaque e uma timeline com trilhas de vídeo (V1, V2) e áudio (A1, A2).
+ * Cada clipe é um link para o trabalho; a agulha percorre a timeline.
+ */
+interface Props {
+  trabalhos: Trabalho[];
+}
+
+const { trabalhos } = Astro.props;
+const [destaque] = trabalhos;
+const videos = trabalhos.filter((t) => t.data.tipo === 'video');
+const audios = trabalhos.filter((t) => t.data.tipo === 'audio');
+
+// Posição/largura (em %) de cada clipe na timeline.
+const layoutVideo = [
+  { left: 2, width: 46 },
+  { left: 50, width: 40 },
+];
+const layoutAudio = [{ left: 14, width: 70 }];
+const marcas = ['00:00', '00:05', '00:10', '00:15', '00:20'];
+
+const barrasOnda = Array.from({ length: 60 }, (_, i) => 0.2 + Math.abs(Math.sin(i * 0.47) * Math.cos(i * 0.17)) * 0.8);
+const trilha = (cor: string) =>
+  `background:color-mix(in srgb, ${cor} 55%, #15171c);border-color:color-mix(in srgb, ${cor} 75%, #ffffff)`;
+---
+
+<div class="rounded-[1.5rem] bg-[#0e1013] p-2 shadow-[var(--shadow-lift)] ring-1 ring-white/10 text-white">
+  <!-- Barra de título -->
+  <div class="flex items-center gap-2 px-2.5 pb-2 pt-1" aria-hidden="true">
+    <span class="w-2.5 h-2.5 rounded-full bg-white/20"></span>
+    <span class="w-2.5 h-2.5 rounded-full bg-white/20"></span>
+    <span class="w-2.5 h-2.5 rounded-full bg-white/20"></span>
+    <span class="ml-2 text-[0.7rem] font-medium text-white/50 truncate">hipermidia-e-multimidia.drp</span>
+    <span class="ml-auto font-mono text-[0.7rem] text-white/60 tabular-nums">00:01:42:12</span>
+  </div>
+
+  <!-- Visor -->
+  {
+    destaque && (
+      <a
+        href={urlTrabalho(destaque)}
+        class="group relative block overflow-hidden rounded-[1.0625rem] aspect-video"
+        aria-label={`Assistir o trabalho ${numeroFormatado(destaque.data.numero)}: ${destaque.data.titulo}`}
+      >
+        <div class="zoom-media absolute inset-0">
+          <Art tom={destaque.data.tom} arte={destaque.data.arte} />
+        </div>
+        <span class="play-btn glass absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 grid place-items-center w-16 h-16 rounded-full" aria-hidden="true">
+          <Play className="w-6 h-6 fill-current translate-x-[2px]" strokeWidth={1.5} />
+        </span>
+        <span class="glass chip absolute left-3 top-3 text-[0.7rem]" aria-hidden="true">
+          <span class="live-dot"></span>
+          Visualizador
+        </span>
+        <span class="absolute left-3 bottom-3 font-mono text-[0.7rem] text-white/80" aria-hidden="true">
+          V1 · {numeroFormatado(destaque.data.numero)}
+        </span>
+      </a>
+    )
+  }
+
+  <!-- Timeline -->
+  <nav aria-label="Timeline: trabalhos por trilha" class="mt-2 rounded-[1.0625rem] bg-black/35 p-2.5 pb-3">
+    <div class="grid grid-cols-[2.25rem_1fr] gap-x-2 gap-y-1.5">
+      <span aria-hidden="true"></span>
+      <div class="relative flex justify-between font-mono text-[0.625rem] text-white/45 tabular-nums" aria-hidden="true">
+        {marcas.map((m) => <span>{m}</span>)}
+      </div>
+
+      {
+        [
+          { nome: 'V2', itens: videos.slice(1, 2), layout: [layoutVideo[1]] },
+          { nome: 'V1', itens: videos.slice(0, 1), layout: [layoutVideo[0]] },
+          { nome: 'A1', itens: audios, layout: layoutAudio },
+        ].map((faixa) => (
+          <>
+            <span class="font-mono text-[0.65rem] text-white/55 grid place-items-center rounded-md bg-white/5 h-9" aria-hidden="true">
+              {faixa.nome}
+            </span>
+            <ul class="relative h-9 rounded-md bg-white/[0.03]" role="list">
+              {faixa.itens.map((t, i) => {
+                const pos = faixa.layout[i] ?? { left: 4, width: 40 };
+                const [cor] = paletaTom[t.data.tom];
+                return (
+                  <li class="absolute inset-y-0" style={`left:${pos.left}%;width:${pos.width}%`}>
+                    <a
+                      href={urlTrabalho(t)}
+                      class="group flex items-center gap-2 h-full px-2 rounded-md border text-[0.7rem] font-medium overflow-hidden transition-[filter,transform] duration-300 hover:brightness-125 hover:-translate-y-px"
+                      style={trilha(cor)}
+                      aria-label={`Trabalho ${numeroFormatado(t.data.numero)}, ${rotuloTipo[t.data.tipo]}: ${t.data.titulo}`}
+                    >
+                      {t.data.tipo === 'audio' ? (
+                        <span class="flex items-center gap-px h-full py-1.5 flex-1 min-w-0" aria-hidden="true">
+                          {barrasOnda.map((h) => (
+                            <span class="flex-1 rounded-full bg-white/70" style={`height:${Math.round(h * 100)}%`} />
+                          ))}
+                        </span>
+                      ) : (
+                        <span class="truncate" aria-hidden="true">
+                          {numeroFormatado(t.data.numero)} · {t.data.titulo}
+                        </span>
+                      )}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        ))
+      }
+
+      <span class="font-mono text-[0.65rem] text-white/55 grid place-items-center rounded-md bg-white/5 h-6" aria-hidden="true">A2</span>
+      <div class="relative h-6 rounded-md bg-white/[0.03] flex items-end gap-px px-1 pb-1 overflow-hidden" aria-hidden="true">
+        {Array.from({ length: 48 }, (_, i) => (
+          <span class="wave-bar flex-1 rounded-full bg-white/25" style={`height:${30 + ((i * 37) % 60)}%;--wave-delay:${-(i % 8) * 0.2}s`} />
+        ))}
+      </div>
+    </div>
+
+    <!-- Agulha de reprodução sobre as trilhas -->
+    <div class="relative h-0 ml-[2.75rem]" aria-hidden="true">
+      <span class="playhead absolute bottom-0 w-px h-[9.5rem] bg-accent-text">
+        <span class="absolute -top-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rotate-45 bg-accent-text rounded-[2px]"></span>
+      </span>
+    </div>
+  </nav>
+</div>

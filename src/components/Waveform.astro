@@ -1,0 +1,39 @@
+---
+/**
+ * Forma de onda determinística (mesma semente = mesmo desenho), gerada em
+ * SVG. É um primitivo nativo de áudio, não uma imagem falsa.
+ */
+interface Props {
+  semente?: number;
+  barras?: number;
+  classe?: string;
+}
+
+const { semente = 7, barras = 96, classe = '' } = Astro.props;
+
+let estado = semente * 9301 + 49297;
+const aleatorio = () => {
+  estado = (estado * 9301 + 49297) % 233280;
+  return estado / 233280;
+};
+
+const alturas = Array.from({ length: barras }, (_, i) => {
+  const envelope = Math.sin((i / (barras - 1)) * Math.PI) ** 0.6;
+  const fala = 0.35 + 0.65 * Math.abs(Math.sin(i * 0.37 + semente)) * aleatorio();
+  return Math.max(0.04, envelope * fala);
+});
+
+const largura = barras * 4;
+---
+
+<svg
+  viewBox={`0 0 ${largura} 100`}
+  preserveAspectRatio="none"
+  aria-hidden="true"
+  focusable="false"
+  class={classe}
+>
+  {alturas.map((h, i) => (
+    <rect x={i * 4 + 0.75} y={50 - h * 48} width="2.5" height={h * 96} fill="currentColor" />
+  ))}
+</svg>

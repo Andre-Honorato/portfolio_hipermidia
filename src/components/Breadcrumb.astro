@@ -1,0 +1,35 @@
+---
+import { ChevronRight } from 'lucide-react';
+
+interface Passo {
+  rotulo: string;
+  href?: string;
+}
+
+interface Props {
+  passos: Passo[];
+}
+
+const { passos } = Astro.props;
+---
+
+<nav aria-label="Trilha de navegação">
+  <ol class="flex flex-wrap items-center gap-1 text-sm">
+    {
+      passos.map((passo, i) => (
+        <li class="inline-flex items-center gap-1">
+          {i > 0 && <ChevronRight className="w-3.5 h-3.5 text-ink-soft" strokeWidth={2} aria-hidden="true" />}
+          {passo.href ? (
+            <a href={passo.href} class="link-soft inline-flex items-center min-h-11 px-1">
+              {passo.rotulo}
+            </a>
+          ) : (
+            <span aria-current="page" class="inline-flex items-center min-h-11 px-1 font-semibold text-ink">
+              {passo.rotulo}
+            </span>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+</nav>

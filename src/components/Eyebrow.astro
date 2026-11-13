@@ -1,0 +1,21 @@
+---
+/**
+ * Sobretítulo de seção no formato de claquete: "CENA 01 · Trabalhos".
+ * Dá ao site o vocabulário da produção audiovisual estudada na disciplina.
+ */
+interface Props {
+  cena: number;
+  rotulo: string;
+  classe?: string;
+}
+
+const { cena, rotulo, classe = '' } = Astro.props;
+---
+
+<p class:list={['t-eyebrow inline-flex items-center gap-2.5', classe]}>
+  <span class="tc">
+    <span class="sr-only">Cena</span><span aria-hidden="true">CENA</span>
+    {String(cena).padStart(2, '0')}
+  </span>
+  {rotulo}
+</p>

@@ -1,0 +1,132 @@
+---
+import { ArrowRight, ArrowUp, Clapperboard, Headphones, Play } from 'lucide-react';
+import Art from './Art.astro';
+import { navegacao, site } from '../data/site';
+import { listarTrabalhos, numeroFormatado, rotuloTipo, urlTrabalho } from '../lib/trabalhos';
+
+/**
+ * Fechamento: convite sobre arte luminosa (sempre escuro) com a ação
+ * principal e atalhos para cada trabalho, seguido do diretório. Sem links
+ * pessoais — é um portfólio de disciplina.
+ */
+const trabalhos = await listarTrabalhos();
+const [primeiro] = trabalhos;
+---
+
+<footer class="frame pb-6 mt-8">
+  <div class="relative overflow-hidden rounded-[var(--radius-panel)] bg-[#0b0b10] text-white" data-aos="fade-up">
+    <div class="absolute inset-0 opacity-90" aria-hidden="true">
+      <Art tom="petroleo" arte="aurora" />
+    </div>
+    <div class="relative grid grid-cols-1 gap-10 lg:grid-cols-[1.2fr_1fr] items-end px-6 sm:px-12 py-14 sm:py-20">
+      <div class="flex flex-col items-start gap-5">
+        <span class="chip glass">
+          <span class="live-dot"></span>
+          {trabalhos.length} trabalhos no ar
+        </span>
+        <h2 class="t-h2 max-w-[18ch]">Assista na ordem de entrega</h2>
+        <p class="text-white/75 text-lg leading-relaxed max-w-[34rem]">
+          Cada página tem a mídia completa, o passo a passo da produção, legendas e a transcrição.
+        </p>
+        {
+          primeiro && (
+            <a href={urlTrabalho(primeiro)} class="group btn btn-lg mt-2 bg-white text-[#0b0b10] hover:-translate-y-px hover:shadow-[0_14px_30px_-12px_rgb(0_0_0/0.6)]">
+              <Play className="w-4 h-4 fill-current" strokeWidth={1.75} aria-hidden="true" />
+              Começar pelo trabalho 01
+              <ArrowRight className="w-4 h-4 nudge-x" strokeWidth={2} aria-hidden="true" />
+            </a>
+          )
+        }
+      </div>
+
+      <ul class="grid grid-cols-1 gap-2 min-w-0" aria-label="Atalhos para os trabalhos">
+        {
+          trabalhos.map((t) => {
+            const Icone = t.data.tipo === 'video' ? Clapperboard : Headphones;
+            return (
+              <li>
+                <a
+                  href={urlTrabalho(t)}
+                  class="group glass flex items-center gap-4 rounded-2xl p-3 pr-4 transition-[background-color,transform] duration-500 ease-[var(--ease-out-soft)] hover:bg-white/15 hover:-translate-y-0.5"
+                >
+                  <span class="grid place-items-center w-10 h-10 rounded-xl bg-white/10 shrink-0" aria-hidden="true">
+                    <Icone className="w-[1.125rem] h-[1.125rem]" strokeWidth={1.75} />
+                  </span>
+                  <span class="flex-1 min-w-0">
+                    <span class="block text-xs text-white/60">
+                      Nº {numeroFormatado(t.data.numero)} · {rotuloTipo[t.data.tipo]} · {t.data.duracao}
+                    </span>
+                    <span class="block font-semibold truncate">{t.data.titulo}</span>
+                  </span>
+                  <ArrowRight className="w-4 h-4 nudge-x shrink-0" strokeWidth={2} aria-hidden="true" />
+                </a>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr] px-2 pt-16 pb-10">
+    <div class="flex flex-col gap-4">
+      <span class="grid place-items-center w-10 h-10 rounded-xl bg-accent text-on-accent" aria-hidden="true">
+        <Play className="w-4 h-4 fill-current translate-x-[1px]" strokeWidth={2} />
+      </span>
+      <p class="font-semibold text-lg tracking-[-0.02em]">{site.disciplina}</p>
+      <p class="text-ink-soft text-sm leading-relaxed max-w-[18rem]">
+        Portfólio acadêmico de {site.autor}, {site.cursoSigla} no {site.instituicaoSigla} {site.campus}, {site.periodo} de {site.ano}.
+      </p>
+    </div>
+
+    <nav aria-labelledby="rodape-navegue">
+      <h2 id="rodape-navegue" class="text-sm font-semibold">Navegue</h2>
+      <ul class="mt-3 grid">
+        {
+          navegacao.map((link) => (
+            <li>
+              <a href={link.href} class="link-soft inline-flex items-center min-h-10 text-sm">
+                {link.rotulo}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <nav aria-labelledby="rodape-trabalhos">
+      <h2 id="rodape-trabalhos" class="text-sm font-semibold">Trabalhos</h2>
+      <ul class="mt-3 grid">
+        {
+          trabalhos.map((t) => (
+            <li>
+              <a href={urlTrabalho(t)} class="link-soft inline-flex items-center gap-2 min-h-10 text-sm">
+                <span class="tabular-nums">{numeroFormatado(t.data.numero)}</span> {rotuloTipo[t.data.tipo]}
+              </a>
+            </li>
+          ))
+        }
+        <li>
+          <a href="/trabalhos/" class="link-soft inline-flex items-center min-h-10 text-sm">Ver todos</a>
+        </li>
+      </ul>
+    </nav>
+
+    <div>
+      <h2 class="text-sm font-semibold">Disciplina</h2>
+      <dl class="mt-3 grid gap-3 text-sm">
+        <div><dt class="text-ink-soft">Instituição</dt><dd>{site.instituicao}, campus {site.campus}</dd></div>
+        <div><dt class="text-ink-soft">Curso</dt><dd>{site.curso}</dd></div>
+        <div><dt class="text-ink-soft">Docentes</dt><dd>{site.docentes.join(' e ')}</dd></div>
+      </dl>
+    </div>
+  </div>
+
+  <div class="flex flex-col sm:flex-row items-center justify-between gap-3 px-2 pt-6 border-t border-hairline text-sm text-ink-soft">
+    <p>© {site.ano} {site.autor} · Trabalho acadêmico do {site.instituicaoSigla}</p>
+    <a href="#conteudo" class="group link-soft inline-flex items-center gap-2 min-h-11">
+      Voltar ao topo
+      <ArrowUp className="w-4 h-4 transition-transform duration-300 group-hover:-translate-y-0.5" strokeWidth={1.75} aria-hidden="true" />
+    </a>
+  </div>
+</footer>

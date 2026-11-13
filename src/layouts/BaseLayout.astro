@@ -1,0 +1,179 @@
+---
+import '@fontsource-variable/inter';
+import '@fontsource-variable/jetbrains-mono';
+import 'aos/dist/aos.css';
+import '../styles/global.css';
+
+import { ClientRouter } from 'astro:transitions';
+import Header from '../components/Header';
+import Footer from '../components/Footer.astro';
+import { navegacao, site } from '../data/site';
+
+interface Props {
+  /** Título da página; o sufixo do site é aplicado automaticamente. */
+  titulo?: string;
+  descricao?: string;
+  imagem?: string;
+  imagemAlt?: string;
+  tipoOg?: 'website' | 'article' | 'video.other' | 'music.song';
+  jsonLd?: Record<string, unknown>[];
+  semIndexacao?: boolean;
+  /** Seção ativa da navegação (aria-current). */
+  ativo?: string;
+}
+
+const {
+  titulo,
+  descricao = site.descricao,
+  imagem = '/og.png',
+  imagemAlt = `${site.nome}, portfólio acadêmico de ${site.autor}`,
+  tipoOg = 'website',
+  jsonLd = [],
+  semIndexacao = false,
+  ativo,
+} = Astro.props;
+
+const tituloCompleto = titulo
+  ? `${titulo} | ${site.nome} · ${site.autor}`
+  : `${site.nome} · Portfólio acadêmico de ${site.autor}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const imagemAbsoluta = new URL(imagem, Astro.site);
+---
+
+<!doctype html>
+<html lang={site.idioma}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{tituloCompleto}</title>
+    <meta name="description" content={descricao} />
+    <meta name="author" content={site.autor} />
+    <meta name="robots" content={semIndexacao ? 'noindex, follow' : 'index, follow, max-image-preview:large'} />
+    <link rel="canonical" href={canonical} />
+    <meta name="generator" content={Astro.generator} />
+
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f5f5f3" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#08080a" media="(prefers-color-scheme: dark)" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta property="og:type" content={tipoOg} />
+    <meta property="og:site_name" content={site.nome} />
+    <meta property="og:locale" content={site.locale} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={tituloCompleto} />
+    <meta property="og:description" content={descricao} />
+    <meta property="og:image" content={imagemAbsoluta} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={imagemAlt} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={tituloCompleto} />
+    <meta name="twitter:description" content={descricao} />
+    <meta name="twitter:image" content={imagemAbsoluta} />
+    <meta name="twitter:image:alt" content={imagemAlt} />
+
+    {jsonLd.map((dados) => <script type="application/ld+json" set:html={JSON.stringify(dados)} />)}
+
+    <!--
+      Tema antes da primeira pintura (preferência salva > sistema) e de novo a
+      cada troca de página do ClientRouter, para não piscar o tema errado.
+    -->
+    <script is:inline>
+      (() => {
+        const aplicar = () => {
+          let salvo = null;
+          try {
+            salvo = localStorage.getItem('theme');
+          } catch {}
+          const escuro = salvo ? salvo === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.classList.toggle('dark', escuro);
+        };
+        aplicar();
+        document.addEventListener('astro:after-swap', aplicar);
+      })();
+    </script>
+
+    <!-- Navegação suave entre páginas (respeita prefers-reduced-motion). -->
+    <ClientRouter />
+    <noscript>
+      <style>
+        [data-aos] {
+          opacity: 1 !important;
+          transform: none !important;
+        }
+      </style>
+    </noscript>
+  </head>
+  <body class="min-h-dvh flex flex-col">
+    <a
+      href="#conteudo"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:bg-accent focus:text-on-accent focus:px-5 focus:py-3 focus:rounded-xl font-semibold"
+    >
+      Pular para o conteúdo
+    </a>
+
+    <Header client:load links={navegacao} ativo={ativo} destaque="/trabalhos/video-institucional-ia/" />
+
+    <main id="conteudo" tabindex="-1" class="flex-1 outline-none">
+      <slot />
+    </main>
+
+    <Footer />
+
+    <script>
+      import AOS from 'aos';
+
+      AOS.init({
+        duration: 900,
+        easing: 'ease-out-cubic',
+        offset: 40,
+        once: true,
+        disable: () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+      });
+
+      // Com o ClientRouter, a página nova chega sem recarregar: reescaneia os elementos.
+      document.addEventListener('astro:after-swap', () => AOS.refreshHard());
+
+      // O roteador não decodifica âncoras com acento (ex.: #edição-no-audacity); rola até elas aqui.
+      document.addEventListener('astro:page-load', () => {
+        if (!location.hash) return;
+        const alvo = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+        alvo?.scrollIntoView({ block: 'start', behavior: 'instant' });
+      });
+
+      // Brilho que acompanha o cursor nos cards marcados com [data-glow].
+      const podeBrilhar =
+        matchMedia('(hover: hover) and (pointer: fine)').matches &&
+        !matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (podeBrilhar) {
+        document.addEventListener(
+          'pointermove',
+          (evento) => {
+            const alvo = (evento.target as Element | null)?.closest<HTMLElement>('[data-glow]');
+            if (!alvo) return;
+            const caixa = alvo.getBoundingClientRect();
+            alvo.style.setProperty('--mx', `${evento.clientX - caixa.left}px`);
+            alvo.style.setProperty('--my', `${evento.clientY - caixa.top}px`);
+          },
+          { passive: true },
+        );
+      }
+
+      // Sem preferência salva, acompanha mudanças do tema do sistema em tempo real.
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (evento) => {
+        let salvo = null;
+        try {
+          salvo = localStorage.getItem('theme');
+        } catch {}
+        if (!salvo) document.documentElement.classList.toggle('dark', evento.matches);
+      });
+    </script>
+  </body>
+</html>

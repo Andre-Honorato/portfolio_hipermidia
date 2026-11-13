@@ -1,0 +1,73 @@
+---
+import { ArrowUpRight, CalendarDays, Clapperboard, Headphones, Play } from 'lucide-react';
+import Art from './Art.astro';
+import { dataCompleta, duracaoExtenso, numeroFormatado, rotuloTipo, urlTrabalho, type Trabalho } from '../lib/trabalhos';
+
+/**
+ * Card de trabalho: capa (pôster real ou arte abstrata) com play em vidro
+ * fosco, chips de tipo/duração e rodapé com data e seta. Um único link.
+ */
+interface Props {
+  trabalho: Trabalho;
+  nivelTitulo?: 'h2' | 'h3';
+}
+
+const { trabalho, nivelTitulo: Titulo = 'h3' } = Astro.props;
+const { numero, titulo, resumo, tipo, data, duracao, midia, tom, arte } = trabalho.data;
+const IconeTipo = tipo === 'video' ? Clapperboard : Headphones;
+---
+
+<article class="card lift h-full" data-glow>
+  <a href={urlTrabalho(trabalho)} class="group flex flex-col h-full p-2 rounded-[var(--radius-card)]">
+    <div
+      class="relative overflow-hidden rounded-[calc(var(--radius-card)-0.375rem)] aspect-[16/10] bg-[#0b0b10]"
+      transition:name={`capa-${trabalho.id}`}
+    >
+      <div class="zoom-media absolute inset-0">
+        {
+          midia.poster ? (
+            <img src={midia.poster} alt="" width="800" height="500" loading="lazy" decoding="async" class="w-full h-full object-cover" />
+          ) : (
+            <Art tom={tom} arte={arte} />
+          )
+        }
+      </div>
+
+      <span
+        class="play-btn glass absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 grid place-items-center w-14 h-14 rounded-full"
+        aria-hidden="true"
+      >
+        <Play className="w-5 h-5 fill-current translate-x-[1px]" strokeWidth={1.5} />
+      </span>
+
+      <div class="absolute inset-x-3 top-3 flex items-center justify-between gap-2">
+        <span class="chip glass">
+          <IconeTipo className="w-3.5 h-3.5" strokeWidth={2} aria-hidden="true" />
+          {rotuloTipo[tipo]}
+        </span>
+        <span class="chip glass tabular-nums">
+          <span aria-hidden="true">{duracao}</span>
+          <span class="sr-only">Duração: {duracaoExtenso(duracao)}</span>
+        </span>
+      </div>
+      <span class="absolute left-4 bottom-3 text-white/80 text-xs font-semibold tabular-nums tracking-wide" aria-hidden="true">
+        Nº {numeroFormatado(numero)}
+      </span>
+    </div>
+
+    <div class="flex flex-col gap-2.5 px-3 pt-5 pb-3 flex-1">
+      <Titulo class="t-h3">{titulo}</Titulo>
+      <p class="text-ink-soft text-[0.9375rem] leading-relaxed line-clamp-2">{resumo}</p>
+      <div class="flex items-center justify-between gap-3 mt-auto pt-3">
+        <span class="inline-flex items-center gap-1.5 text-sm text-ink-soft">
+          <CalendarDays className="w-4 h-4" strokeWidth={1.75} aria-hidden="true" />
+          <time datetime={data.toISOString().slice(0, 10)}>{dataCompleta(data)}</time>
+        </span>
+        <span class="inline-flex items-center gap-1 text-sm font-semibold text-accent-text">
+          {tipo === 'video' ? 'Assistir' : 'Ouvir'}
+          <ArrowUpRight className="arrow-go w-4 h-4" strokeWidth={2} aria-hidden="true" />
+        </span>
+      </div>
+    </div>
+  </a>
+</article>

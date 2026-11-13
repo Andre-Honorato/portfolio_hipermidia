@@ -1,0 +1,806 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Direção: sala de projeção. Interface neutra (grafite no escuro, papel
+ * quente no claro), um único acento azul-petróleo para ações e momentos de luz,
+ * e capas abstratas luminosas carregando a cor dos trabalhos.
+ */
+:root {
+  --bg: #f5f5f3;
+  --surface: #ffffff;
+  --surface-2: #efefec;
+  --ink: #111113;
+  --ink-soft: #5c5c66;
+  --hairline: rgb(17 17 19 / 0.09);
+  --hairline-strong: rgb(17 17 19 / 0.16);
+
+  --accent: #0f5f6b;
+  --accent-text: #0f5f6b;
+  --on-accent: #ffffff;
+  --accent-soft: rgb(15 95 107 / 0.09);
+  --glow: rgb(15 95 107 / 0.16);
+  --ring: rgb(15 95 107 / 0.2);
+
+  --shadow-card: 0 1px 2px rgb(17 17 19 / 0.04), 0 12px 32px -16px rgb(17 17 19 / 0.14);
+  --shadow-lift: 0 2px 4px rgb(17 17 19 / 0.04), 0 28px 56px -24px rgb(17 17 19 / 0.28);
+
+  color-scheme: light;
+}
+
+:root.dark {
+  --bg: #08080a;
+  --surface: #111114;
+  --surface-2: #18181c;
+  --ink: #f2f2f4;
+  --ink-soft: #9b9ba6;
+  --hairline: rgb(255 255 255 / 0.08);
+  --hairline-strong: rgb(255 255 255 / 0.14);
+
+  --accent: #4fb3c0;
+  --accent-text: #6cc4cf;
+  --on-accent: #06191c;
+  --accent-soft: rgb(79 179 192 / 0.12);
+  --glow: rgb(79 179 192 / 0.2);
+  --ring: rgb(79 179 192 / 0.22);
+
+  --shadow-card: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 12px 32px -16px rgb(0 0 0 / 0.6);
+  --shadow-lift: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 28px 56px -24px rgb(0 0 0 / 0.8);
+
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+  --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  --color-on-accent: var(--on-accent);
+  --color-accent-soft: var(--accent-soft);
+
+  --font-sans: "Inter Variable", Inter, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, monospace;
+
+  --radius-panel: 1.75rem;
+  --radius-card: 1.375rem;
+  --radius-tile: 1rem;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 6rem;
+    overflow-x: clip;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01", "ss03";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent-text);
+    outline-offset: 3px;
+    border-radius: 0.5rem;
+  }
+
+  img,
+  video,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  img,
+  video {
+    height: auto;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled),
+  summary {
+    cursor: pointer;
+  }
+
+  details > summary {
+    list-style: none;
+  }
+
+  details > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  [data-aos] {
+    overflow-anchor: none;
+  }
+}
+
+@layer components {
+  /* ---------- Tipografia ---------- */
+
+  .t-hero {
+    font-weight: 600;
+    font-size: clamp(2.5rem, 3.6vw + 0.75rem, 5.25rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+
+  .t-h2 {
+    font-weight: 600;
+    font-size: clamp(1.875rem, 2.2vw + 0.9rem, 3.375rem);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+
+  .t-h3 {
+    font-weight: 600;
+    font-size: clamp(1.125rem, 0.6vw + 0.85rem, 1.5rem);
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  .t-lead {
+    font-size: clamp(1.0625rem, 0.35vw + 0.95rem, 1.3125rem);
+    line-height: 1.6;
+    color: var(--ink-soft);
+    text-wrap: pretty;
+  }
+
+  .t-eyebrow {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--accent-text);
+  }
+
+  /* Marca de cena/timecode: mono, caixa alta, moldura fina. */
+  .tc {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.375rem;
+    border: 1px solid currentColor;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- Estrutura ---------- */
+
+  /* Largura útil: cresce com a tela até 1920 px, com margens proporcionais. */
+  .frame {
+    width: 100%;
+    max-width: 120rem;
+    margin-inline: auto;
+    padding-inline: clamp(1rem, 3.2vw, 4rem);
+  }
+
+  .panel {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    border-radius: var(--radius-panel);
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+  }
+
+  .panel-pad {
+    padding: clamp(2rem, 4.5vw, 5.5rem) clamp(1.25rem, 4vw, 5.5rem);
+  }
+
+  .section {
+    padding-block: clamp(4rem, 7vw, 8.5rem);
+  }
+
+  .card {
+    border-radius: var(--radius-card);
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    box-shadow: var(--shadow-card);
+  }
+
+  .tile {
+    border-radius: var(--radius-tile);
+    background: var(--surface-2);
+  }
+
+  /* Halo suave de luz no topo de painéis de destaque. */
+  .halo::before {
+    content: "";
+    position: absolute;
+    inset: -40% -10% auto auto;
+    width: 70%;
+    aspect-ratio: 1;
+    border-radius: 999px;
+    background: radial-gradient(closest-side, var(--glow), transparent);
+    filter: blur(20px);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* ---------- Ações ---------- */
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.875rem;
+    padding: 0 1.25rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    letter-spacing: -0.005em;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: transform 0.4s var(--ease-out-soft), background-color 0.2s ease, border-color 0.2s ease,
+      box-shadow 0.4s var(--ease-out-soft), color 0.2s ease;
+  }
+
+  .btn:active {
+    transform: scale(0.98);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--on-accent);
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.18) inset, 0 8px 20px -10px var(--accent);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.22) inset, 0 14px 30px -12px var(--accent);
+  }
+
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid var(--hairline-strong);
+  }
+
+  .btn-secondary:hover {
+    background: var(--surface-2);
+  }
+
+  .btn-lg {
+    min-height: 3.25rem;
+    padding: 0 1.5rem;
+    font-size: 1rem;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 1.875rem;
+    padding: 0 0.75rem;
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--ink);
+    font-size: 0.8125rem;
+    font-weight: 550;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  /* Vidro fosco sobre as capas (sempre escuras). */
+  .glass {
+    background: rgb(12 12 16 / 0.42);
+    color: #fff;
+    border: 1px solid rgb(255 255 255 / 0.14);
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+  }
+
+  .icon-box {
+    display: inline-grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.75rem;
+    background: var(--accent-soft);
+    color: var(--accent-text);
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.5s var(--ease-out-soft);
+  }
+
+  .group:hover .icon-box,
+  .group:focus-visible .icon-box {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  /* ---------- Interações ---------- */
+
+  .lift {
+    transition: transform 0.6s var(--ease-out-soft), box-shadow 0.6s var(--ease-out-soft),
+      border-color 0.3s ease;
+  }
+
+  .lift:hover,
+  .lift:focus-within {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lift);
+    border-color: var(--hairline-strong);
+  }
+
+  .zoom-media {
+    transition: transform 1.2s var(--ease-out-soft);
+  }
+
+  .group:hover .zoom-media,
+  .group:focus-visible .zoom-media {
+    transform: scale(1.045);
+  }
+
+  .play-btn {
+    transition: scale 0.5s var(--ease-out-soft), background-color 0.3s ease, box-shadow 0.5s var(--ease-out-soft);
+  }
+
+  .group:hover .play-btn,
+  .group:focus-visible .play-btn {
+    scale: 1.08;
+    background: var(--accent);
+    border-color: transparent;
+    box-shadow: 0 0 0 10px var(--ring);
+  }
+
+  .arrow-go {
+    transition: transform 0.5s var(--ease-out-soft);
+  }
+
+  .group:hover .arrow-go,
+  .group:focus-visible .arrow-go {
+    transform: translate(2px, -2px);
+  }
+
+  .nudge-x {
+    transition: transform 0.4s var(--ease-out-soft);
+  }
+
+  .group:hover .nudge-x,
+  .group:focus-visible .nudge-x {
+    transform: translateX(3px);
+  }
+
+  .link-soft {
+    color: var(--ink-soft);
+    transition: color 0.2s ease;
+  }
+
+  .link-soft:hover {
+    color: var(--ink);
+  }
+
+  /* Brilho que acompanha o cursor (posição vem de --mx/--my via script). */
+  [data-glow] {
+    position: relative;
+  }
+
+  [data-glow]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(
+      22rem circle at var(--mx, 50%) var(--my, 50%),
+      var(--glow),
+      transparent 60%
+    );
+    transition: opacity 0.5s ease;
+  }
+
+  [data-glow]:hover::after {
+    opacity: 1;
+  }
+
+  /* Barra de progresso de leitura: animação ligada à rolagem, sem JS. */
+  .reading-progress {
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 2px;
+    z-index: 60;
+    background: var(--accent-text);
+    transform-origin: left;
+    transform: scaleX(0);
+    pointer-events: none;
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .reading-progress {
+      animation: progress-read linear both;
+      animation-timeline: scroll(root block);
+    }
+  }
+
+  @supports not (animation-timeline: scroll()) {
+    .reading-progress {
+      display: none;
+    }
+  }
+
+  /* Menu "Nesta página": a seção ativa ganha um fio de destaque à esquerda. */
+  .toc-link {
+    position: relative;
+  }
+
+  .toc-link::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.625rem;
+    bottom: 0.625rem;
+    width: 2px;
+    border-radius: 999px;
+    background: var(--accent-text);
+    transform: scaleY(0);
+    transition: transform 0.35s var(--ease-out-soft);
+  }
+
+  .toc-link[aria-current="true"] {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .toc-link[aria-current="true"]::before {
+    transform: scaleY(1);
+  }
+
+  /* ---------- Movimento ambiente (discreto) ---------- */
+
+  .drift {
+    animation: drift var(--drift-dur, 22s) ease-in-out infinite alternate;
+    animation-delay: var(--drift-delay, 0s);
+  }
+
+  .hover-float {
+    animation: hover-float var(--float-dur, 8s) ease-in-out infinite;
+    animation-delay: var(--float-delay, 0s);
+  }
+
+  .wave-bar {
+    transform-origin: center;
+    animation: wave 1.8s ease-in-out infinite;
+    animation-delay: var(--wave-delay, 0s);
+  }
+
+  .progress-fill {
+    transform-origin: left;
+    animation: progress 14s linear infinite;
+  }
+
+  /* Agulha de reprodução percorrendo a timeline. */
+  .playhead {
+    left: 0;
+    animation: playhead 18s linear infinite;
+  }
+
+  .live-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: var(--accent-text);
+    box-shadow: 0 0 0 0 var(--accent-text);
+    animation: live 2.4s ease-out infinite;
+  }
+
+  .marquee {
+    display: flex;
+    width: max-content;
+    animation: marquee 60s linear infinite;
+  }
+
+  .marquee-wrap {
+    mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+  }
+
+  .marquee-wrap:hover .marquee {
+    animation-play-state: paused;
+  }
+
+  /* ---------- Menu móvel ---------- */
+
+  .mobile-menu {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    transition: grid-template-rows 0.4s var(--ease-out-soft), visibility 0.4s;
+  }
+
+  .mobile-menu.is-open {
+    grid-template-rows: 1fr;
+    visibility: visible;
+  }
+
+  /* ---------- Texto corrido dos trabalhos (Markdown) ---------- */
+
+  /* O bloco usa a coluna toda (tabelas, citações); o texto corrido mantém
+     uma largura de leitura confortável. */
+  .prose-doc {
+    font-size: clamp(1.0625rem, 0.2vw + 1rem, 1.1875rem);
+    line-height: 1.75;
+    max-width: 72rem;
+    color: var(--ink);
+  }
+
+  .prose-doc > :where(p, h2, h3, ul, ol) {
+    max-width: 46rem;
+  }
+
+  .prose-doc > * + * {
+    margin-top: 1.15em;
+  }
+
+  .prose-doc p {
+    color: var(--ink-soft);
+  }
+
+  .prose-doc h2 {
+    margin-top: 3rem;
+    font-weight: 600;
+    font-size: clamp(1.5rem, 2.6vw, 1.875rem);
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    scroll-margin-top: 7rem;
+  }
+
+  .prose-doc h2:first-child {
+    margin-top: 0;
+  }
+
+  .prose-doc h3 {
+    margin-top: 2rem;
+    font-weight: 600;
+    font-size: 1.1875rem;
+    letter-spacing: -0.015em;
+  }
+
+  .prose-doc a {
+    color: var(--accent-text);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+
+  .prose-doc ol,
+  .prose-doc ul {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .prose-doc ol {
+    counter-reset: passo;
+  }
+
+  .prose-doc li {
+    position: relative;
+    padding: 0.75rem 1rem 0.75rem 3.25rem;
+    border-radius: var(--radius-tile);
+    background: var(--surface-2);
+    line-height: 1.5;
+  }
+
+  .prose-doc ol > li::before {
+    counter-increment: passo;
+    content: counter(passo, decimal-leading-zero);
+    position: absolute;
+    left: 1rem;
+    top: 0.75rem;
+    color: var(--accent-text);
+    font-weight: 650;
+    font-size: 0.875rem;
+    font-feature-settings: "tnum";
+  }
+
+  .prose-doc ul > li::before {
+    content: "";
+    position: absolute;
+    left: 1.25rem;
+    top: 1.35rem;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 999px;
+    background: var(--accent-text);
+  }
+
+  .prose-doc blockquote {
+    position: relative;
+    padding: 1.5rem 1.75rem;
+    border-radius: var(--radius-card);
+    background: var(--accent-soft);
+    border: 1px solid var(--hairline);
+    font-weight: 500;
+    font-size: clamp(1.1875rem, 1.8vw, 1.375rem);
+    line-height: 1.45;
+    letter-spacing: -0.015em;
+  }
+
+  .prose-doc blockquote p {
+    color: var(--ink);
+  }
+
+  /* Tabelas (roteiro, efeitos): rolam na horizontal em telas estreitas. */
+  .prose-doc table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-tile);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  @media (min-width: 640px) {
+    .prose-doc table {
+      display: table;
+      overflow: visible;
+    }
+  }
+
+  .prose-doc thead th {
+    background: var(--surface-2);
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 0.8125rem;
+    text-align: left;
+  }
+
+  .prose-doc th,
+  .prose-doc td {
+    padding: 0.75rem 1rem;
+    vertical-align: top;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  .prose-doc tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  .prose-doc td:first-child {
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  .prose-doc td {
+    color: var(--ink-soft);
+  }
+
+  .prose-doc strong {
+    font-weight: 650;
+    color: var(--ink);
+  }
+}
+
+@keyframes drift {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(var(--dx, 40px), var(--dy, -30px)) scale(1.08);
+  }
+}
+
+@keyframes hover-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes wave {
+  0%,
+  100% {
+    transform: scaleY(0.45);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes progress {
+  from {
+    transform: scaleX(0.06);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes live {
+  0% {
+    box-shadow: 0 0 0 0 var(--ring);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes playhead {
+  from {
+    left: 0%;
+  }
+  to {
+    left: 100%;
+  }
+}
+
+@keyframes progress-read {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Transições entre páginas: troca rápida da página e morph mais lento da capa. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.35s;
+}
+
+::view-transition-group(*) {
+  animation-duration: 0.55s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* O progresso de leitura segue a rolagem do usuário; não é movimento autônomo. */
+  .reading-progress {
+    animation-duration: auto !important;
+  }
+}

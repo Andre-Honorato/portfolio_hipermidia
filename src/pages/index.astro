@@ -1,0 +1,331 @@
+---
+import {
+  ArrowDown,
+  ArrowRight,
+  ArrowUpRight,
+  BookOpen,
+  CalendarDays,
+  Clapperboard,
+  Clock,
+  GraduationCap,
+  Headphones,
+  Layers,
+  Play,
+  School,
+  User,
+  Users,
+} from 'lucide-react';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import WorkCard from '../components/WorkCard.astro';
+import EditorMock from '../components/EditorMock.astro';
+import Eyebrow from '../components/Eyebrow.astro';
+import Softwares from '../components/Softwares.astro';
+import { aviso, site, tecnicas } from '../data/site';
+import { dataCompleta, listarTrabalhos, minutosTotais, numeroFormatado, rotuloTipo, urlTrabalho } from '../lib/trabalhos';
+import { colecaoLd, cursoLd, websiteLd } from '../lib/seo';
+
+const trabalhos = await listarTrabalhos();
+const [destaque] = trabalhos;
+const totalVideos = trabalhos.filter((t) => t.data.tipo === 'video').length;
+const totalAudios = trabalhos.length - totalVideos;
+const minutos = minutosTotais(trabalhos);
+const porSlug = new Map(trabalhos.map((t) => [t.id, t]));
+
+const metricas = [
+  { valor: numeroFormatado(trabalhos.length), rotulo: 'Trabalhos entregues', icone: Layers },
+  { valor: numeroFormatado(totalVideos), rotulo: totalVideos === 1 ? 'Vídeo' : 'Vídeos', icone: Clapperboard },
+  { valor: numeroFormatado(totalAudios), rotulo: totalAudios === 1 ? 'Áudio' : 'Áudios', icone: Headphones },
+  { valor: `${minutos} min`, rotulo: 'De mídia produzida', icone: Clock },
+];
+
+const palavras = [
+  'Vídeo com IA',
+  'Roteiro',
+  'Cortes',
+  'Redução de ruído',
+  'Equalização',
+  'Auto Duck',
+  'Chromakey',
+  'Vinheta',
+  'Créditos',
+];
+
+const fichaDisciplina = [
+  { rotulo: 'Disciplina', valor: site.disciplina, icone: BookOpen },
+  { rotulo: 'Instituição', valor: `${site.instituicaoSigla} Campus ${site.campus}`, icone: School },
+  { rotulo: 'Curso', valor: `${site.curso} (${site.cursoSigla})`, icone: GraduationCap },
+  { rotulo: 'Período', valor: `${site.periodo} · ${site.ano}`, icone: CalendarDays },
+  { rotulo: 'Docentes', valor: site.docentes.join(' e '), icone: Users },
+  { rotulo: 'Discente', valor: site.autor, icone: User },
+];
+---
+
+<BaseLayout jsonLd={[websiteLd(), colecaoLd(trabalhos), { '@context': 'https://schema.org', ...cursoLd }]}>
+  <!-- ============ Abertura ============ -->
+  <section aria-labelledby="titulo-home" class="frame pt-6 sm:pt-10">
+    <div class="panel halo">
+      <div class="panel-pad grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1.15fr] items-center">
+        <div class="flex flex-col items-start gap-6">
+          <a
+            href={aviso.href}
+            class="group inline-flex items-center gap-2.5 min-h-9 pl-2 pr-3.5 rounded-full border border-hairline bg-surface-2 text-sm transition-colors hover:border-hairline-strong"
+            data-aos="fade-up"
+          >
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-accent text-on-accent px-2 py-0.5 text-xs font-semibold">{aviso.rotulo}</span>
+            <span class="font-medium">{aviso.texto}</span>
+            <ArrowRight className="w-3.5 h-3.5 nudge-x text-ink-soft" strokeWidth={2} aria-hidden="true" />
+          </a>
+
+          <h1 id="titulo-home" class="t-hero" data-aos="fade-up" data-aos-delay="80">
+            Hipermídia e Multimídia
+          </h1>
+          <p class="t-lead max-w-[36rem]" data-aos="fade-up" data-aos-delay="160">
+            {`Três trabalhos de edição de vídeo e áudio feitos por ${site.autor} na disciplina, no ${site.periodo} de ${site.curso} do ${site.instituicaoSigla} ${site.campus}.`}
+          </p>
+          <div class="flex flex-wrap gap-3 pt-1" data-aos="fade-up" data-aos-delay="240">
+            {
+              destaque && (
+                <a href={urlTrabalho(destaque)} class="group btn btn-primary btn-lg">
+                  <Play className="w-4 h-4 fill-current" strokeWidth={1.75} aria-hidden="true" />
+                  Assistir agora
+                </a>
+              )
+            }
+            <a href="#trabalhos" class="group btn btn-secondary btn-lg">
+              Ver trabalhos
+              <ArrowDown className="w-4 h-4 transition-transform duration-300 group-hover:translate-y-0.5" strokeWidth={1.75} aria-hidden="true" />
+            </a>
+          </div>
+        </div>
+
+        <!-- Ilha de edição: visor + timeline; cada clipe abre um trabalho -->
+        <div class="w-full min-w-0" data-aos="fade-up" data-aos-delay="120">
+          <EditorMock trabalhos={trabalhos} />
+        </div>
+      </div>
+
+      <!-- Faixa rolante discreta -->
+      <div class="marquee-wrap overflow-hidden border-t border-hairline py-5" aria-hidden="true">
+        <ul class="marquee">
+          {
+            [...palavras, ...palavras].map((p) => (
+              <li class="flex items-center gap-8 px-4 text-ink-soft font-medium whitespace-nowrap">
+                {p}
+                <span class="w-1 h-1 rounded-full bg-hairline-strong" />
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Números ============ -->
+  <section aria-label="Em números" class="frame mt-4">
+    <ul class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {
+        metricas.map((m, i) => {
+          const Icone = m.icone;
+          return (
+            <li class="card p-5 sm:p-6 flex items-center gap-4" data-aos="fade-up" data-aos-delay={i * 70}>
+              <span class="icon-box w-11 h-11">
+                <Icone className="w-5 h-5" strokeWidth={1.75} aria-hidden="true" />
+              </span>
+              <p class="flex flex-col">
+                <span class="font-semibold text-2xl sm:text-[1.75rem] leading-none tracking-[-0.03em] tabular-nums whitespace-nowrap">{m.valor}</span>
+                <span class="text-ink-soft text-sm mt-1.5">{m.rotulo}</span>
+              </p>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </section>
+
+  <!-- ============ Trabalhos ============ -->
+  <section id="trabalhos" aria-labelledby="titulo-trabalhos" class="frame section">
+    <div class="flex flex-wrap items-end justify-between gap-6">
+      <div class="max-w-[36rem]" data-aos="fade-up">
+        <Eyebrow cena={1} rotulo="Trabalhos" />
+        <h2 id="titulo-trabalhos" class="t-h2 mt-3">Escolha por onde começar</h2>
+        <p class="t-lead mt-4">Dois vídeos e um áudio, na ordem em que foram entregues. Filtre por formato ou abra direto.</p>
+      </div>
+      <div
+        role="group"
+        aria-label="Filtrar trabalhos por formato"
+        class="inline-flex p-1 rounded-xl bg-surface-2 border border-hairline"
+        data-aos="fade-up"
+        data-aos-delay="80"
+      >
+        {
+          [
+            { valor: 'todos', rotulo: 'Todos', n: trabalhos.length },
+            { valor: 'video', rotulo: 'Vídeos', n: totalVideos },
+            { valor: 'audio', rotulo: 'Áudio', n: totalAudios },
+          ].map((f, i) => (
+            <button
+              type="button"
+              data-filtro={f.valor}
+              aria-pressed={i === 0 ? 'true' : 'false'}
+              class="inline-flex items-center gap-2 min-h-10 px-4 rounded-lg text-sm font-medium text-ink-soft transition-[background-color,color,box-shadow] duration-300 hover:text-ink aria-pressed:bg-surface aria-pressed:text-ink aria-pressed:shadow-[var(--shadow-card)]"
+            >
+              {f.rotulo}
+              <span class="text-xs tabular-nums text-ink-soft">{f.n}</span>
+            </button>
+          ))
+        }
+      </div>
+    </div>
+
+    <p id="filtro-status" class="sr-only" aria-live="polite"></p>
+
+    <ul id="lista-trabalhos" class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 mt-10 sm:mt-12" role="list">
+      {
+        trabalhos.map((trabalho, i) => (
+          <li data-tipo={trabalho.data.tipo} data-aos="fade-up" data-aos-delay={i * 90}>
+            <WorkCard trabalho={trabalho} />
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <!-- ============ Ferramentas ============ -->
+  <Softwares cena={2} />
+
+  <!-- ============ Técnicas ============ -->
+  <section id="tecnicas" aria-labelledby="titulo-tecnicas" class="frame">
+    <div class="panel panel-pad">
+      <div class="flex flex-wrap items-end justify-between gap-6">
+        <div class="max-w-[36rem]" data-aos="fade-up">
+          <Eyebrow cena={3} rotulo="Técnicas" />
+          <h2 id="titulo-tecnicas" class="t-h2 mt-3">O que foi usado em cada trabalho</h2>
+        </div>
+        <p class="text-ink-soft text-sm max-w-[22rem]" data-aos="fade-up">
+          Cada técnica abre o trecho da página do trabalho em que ela aparece.
+        </p>
+      </div>
+      <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-2.5 mt-10">
+        {
+          tecnicas.map((tecnica, i) => {
+            const Icone = tecnica.icone;
+            const trabalho = porSlug.get(tecnica.trabalho);
+            if (!trabalho) return null;
+            return (
+              <li data-aos="fade-up" data-aos-delay={(i % 3) * 50}>
+                <a
+                  href={`${urlTrabalho(trabalho)}#${tecnica.ancora}`}
+                  class="group flex items-center gap-3 h-full min-h-[4.5rem] p-3 pr-4 rounded-[var(--radius-tile)] border border-hairline bg-surface transition-[border-color,background-color,transform] duration-500 ease-[var(--ease-out-soft)] hover:border-hairline-strong hover:bg-surface-2 hover:-translate-y-0.5"
+                >
+                  <span class="icon-box">
+                    <Icone className="w-[1.125rem] h-[1.125rem]" strokeWidth={1.75} aria-hidden="true" />
+                  </span>
+                  <span class="flex-1 min-w-0">
+                    <span class="block font-medium text-[0.9375rem] leading-tight">{tecnica.rotulo}</span>
+                    <span class="block text-xs text-ink-soft mt-1">
+                      Trabalho {numeroFormatado(trabalho.data.numero)} · {rotuloTipo[trabalho.data.tipo]}
+                    </span>
+                  </span>
+                  <ArrowUpRight className="arrow-go w-4 h-4 text-ink-soft opacity-0 group-hover:opacity-100 transition-opacity" strokeWidth={2} aria-hidden="true" />
+                </a>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ============ Disciplina ============ -->
+  <section id="disciplina" aria-labelledby="titulo-disciplina" class="frame section">
+    <div class="panel panel-pad halo">
+      <div class="grid grid-cols-1 gap-12 lg:grid-cols-2">
+        <div class="flex flex-col gap-8">
+          <div data-aos="fade-up">
+            <Eyebrow cena={4} rotulo="Disciplina" />
+            <h2 id="titulo-disciplina" class="t-h2 mt-3">Hipermídia e Multimídia</h2>
+            <p class="t-lead mt-4">
+              {`Disciplina do ${site.periodo} de ${site.curso} no ${site.instituicaoSigla}, campus ${site.campus}, com ${site.docentes.join(' e ')}. Todos os trabalhos práticos de ${site.ano} foram de edição de vídeo e de áudio.`}
+            </p>
+          </div>
+          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {
+              fichaDisciplina.map((item, i) => {
+                const Icone = item.icone;
+                return (
+                  <div class="tile flex items-center gap-3 p-3.5" data-aos="fade-up" data-aos-delay={i * 50}>
+                    <span class="icon-box">
+                      <Icone className="w-[1.125rem] h-[1.125rem]" strokeWidth={1.75} aria-hidden="true" />
+                    </span>
+                    <div class="min-w-0">
+                      <dt class="text-xs text-ink-soft">{item.rotulo}</dt>
+                      <dd class="font-medium leading-snug">{item.valor}</dd>
+                    </div>
+                  </div>
+                );
+              })
+            }
+          </dl>
+        </div>
+
+        <div class="tile p-6 sm:p-8 self-start" data-aos="fade-up" data-aos-delay="100">
+          <h3 class="font-semibold text-xl tracking-[-0.02em]">Entregas</h3>
+          <ol class="relative mt-6 grid gap-6">
+            <span class="absolute left-[0.6875rem] top-2 bottom-2 w-px bg-hairline-strong" aria-hidden="true"></span>
+            {
+              trabalhos.map((t) => (
+                <li class="relative grid grid-cols-[1.5rem_1fr] gap-4">
+                  <span class="relative z-10 grid place-items-center w-6 h-6 rounded-full bg-accent text-on-accent text-[0.6875rem] font-semibold tabular-nums mt-0.5">
+                    {t.data.numero}
+                  </span>
+                  <div class="min-w-0">
+                    <p class="font-mono text-xs text-accent-text uppercase tracking-wider">
+                      <time datetime={t.data.data.toISOString().slice(0, 10)}>{dataCompleta(t.data.data)}</time> · {rotuloTipo[t.data.tipo]}
+                    </p>
+                    <a href={urlTrabalho(t)} class="group inline-flex items-center gap-1.5 mt-1 font-medium leading-snug hover:text-accent-text transition-colors">
+                      {t.data.titulo}
+                      <ArrowRight className="w-3.5 h-3.5 nudge-x shrink-0" strokeWidth={2} aria-hidden="true" />
+                    </a>
+                  </div>
+                </li>
+              ))
+            }
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  // Filtro por formato: alterna aria-pressed, esconde cards e anuncia o resultado.
+  // Com o ClientRouter, registra de novo a cada carregamento de página.
+  document.addEventListener('astro:page-load', () => {
+    const botoes = document.querySelectorAll<HTMLButtonElement>('[data-filtro]');
+    const itens = document.querySelectorAll<HTMLLIElement>('#lista-trabalhos > li');
+    const status = document.getElementById('filtro-status');
+    const semMovimento = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    botoes.forEach((botao) => {
+      botao.addEventListener('click', () => {
+        const filtro = botao.dataset.filtro;
+        botoes.forEach((b) => b.setAttribute('aria-pressed', String(b === botao)));
+        let visiveis = 0;
+        itens.forEach((item) => {
+          const mostra = filtro === 'todos' || item.dataset.tipo === filtro;
+          item.hidden = !mostra;
+          if (!mostra) return;
+          visiveis += 1;
+          item.animate(
+            [
+              { opacity: 0, transform: 'translateY(10px)', filter: 'blur(4px)' },
+              { opacity: 1, transform: 'none', filter: 'blur(0)' },
+            ],
+            { duration: semMovimento ? 0 : 500, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+          );
+        });
+        if (status) status.textContent = `${visiveis} ${visiveis === 1 ? 'trabalho exibido' : 'trabalhos exibidos'}`;
+      });
+    });
+  });
+</script>

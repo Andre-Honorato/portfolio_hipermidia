@@ -1,0 +1,78 @@
+---
+/**
+ * Miniatura de interface (decorativa) de cada software, feita em código:
+ * rodas de cor + timeline para o DaVinci Resolve; faixa estéreo com seleção
+ * para o Audacity. Não reproduz telas reais, só a ideia de cada ferramenta.
+ */
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+
+const onda = (fase: number, n = 90) =>
+  Array.from({ length: n }, (_, i) => {
+    const env = 0.25 + 0.75 * Math.abs(Math.sin(i * 0.11 + fase)) * (0.6 + 0.4 * Math.sin(i * 0.53 + fase * 2));
+    return Math.max(0.06, Math.min(1, env));
+  });
+const canalE = onda(0.3);
+const canalD = onda(1.1);
+---
+
+{
+  slug === 'davinci-resolve' ? (
+    <div class="relative h-full w-full bg-[#121418] text-white/70 p-4 flex flex-col gap-3" aria-hidden="true">
+      <div class="grid grid-cols-4 gap-3 flex-1 min-h-0">
+        {['Lift', 'Gamma', 'Gain', 'Offset'].map((nome, i) => (
+          <div class="flex flex-col items-center justify-center gap-1.5 min-w-0">
+            <div class="relative w-full max-w-[4.5rem] aspect-square rounded-full p-[3px] bg-[conic-gradient(from_90deg,#c94a4a,#c9b04a,#4ac96a,#4ab8c9,#4a5fc9,#b04ac9,#c94a4a)] opacity-80">
+              <div class="w-full h-full rounded-full bg-[radial-gradient(circle,#2a2e35,#16181d)] grid place-items-center">
+                <span
+                  class="hover-float block w-2 h-2 rounded-full bg-white shadow-[0_0_0_2px_rgb(0_0_0/0.5)]"
+                  style={`translate:${[-6, 4, 7, -2][i]}px ${[5, -4, -7, 3][i]}px;--float-dur:${6 + i}s;--float-delay:${-i}s`}
+                />
+              </div>
+            </div>
+            <span class="text-[0.625rem] font-mono uppercase tracking-wider">{nome}</span>
+          </div>
+        ))}
+      </div>
+      <div class="relative rounded-md bg-black/40 p-1.5 grid gap-1">
+        <div class="flex gap-1 h-3">
+          <span class="rounded-sm bg-[#3d6f9e] w-[22%]" />
+          <span class="rounded-sm bg-[#3d6f9e] w-[34%]" />
+          <span class="rounded-sm bg-[#3d6f9e] w-[18%]" />
+          <span class="rounded-sm bg-[#3d6f9e] flex-1" />
+        </div>
+        <div class="flex gap-1 h-3">
+          <span class="rounded-sm bg-[#3f8a62] w-[56%]" />
+          <span class="rounded-sm bg-[#3f8a62] flex-1" />
+        </div>
+        <span class="playhead absolute top-0 bottom-0 w-px bg-[#ff5a4a]" />
+      </div>
+    </div>
+  ) : (
+    <div class="relative h-full w-full bg-[#121418] text-white/70 p-4 flex flex-col gap-2" aria-hidden="true">
+      <div class="flex items-center justify-between text-[0.625rem] font-mono uppercase tracking-wider">
+        <span>Faixa de áudio · estéreo</span>
+        <span class="tabular-nums">44100 Hz</span>
+      </div>
+      <div class="relative flex-1 min-h-0 rounded-md bg-black/40 grid grid-rows-2 gap-px overflow-hidden">
+        {[canalE, canalD].map((canal) => (
+          <div class="relative flex items-center gap-px px-1">
+            {canal.map((h) => (
+              <span class="flex-1 rounded-full bg-[#5aa7e6]" style={`height:${Math.round(h * 90)}%`} />
+            ))}
+          </div>
+        ))}
+        <span class="absolute inset-y-0 left-[34%] w-[22%] bg-white/15 border-x border-white/40" />
+        <span class="playhead absolute top-0 bottom-0 w-px bg-white" />
+      </div>
+      <div class="flex items-center gap-2 text-[0.625rem] font-mono tabular-nums">
+        <span class="px-1.5 py-0.5 rounded bg-white/10">00:00:12.480</span>
+        <span>seleção</span>
+        <span class="px-1.5 py-0.5 rounded bg-white/10">00:00:03.200</span>
+      </div>
+    </div>
+  )
+}
