@@ -99,7 +99,11 @@ O deploy usa o `Dockerfile` da raiz, em duas etapas:
 1. A imagem `node:24-alpine` (Node 24 com npm 11) roda `npm ci` e `npm run build`.
 2. Um `nginx:stable-alpine` serve a pasta `dist/` gerada, com a configuração de `nginx.conf`: URLs com barra final, página 404, gzip e cache longo para os arquivos com hash.
 
-O Astro exige Node 22.23.4 ou mais novo, e o `package-lock.json` foi gerado com npm 11. Com uma versão anterior, o `npm ci` falha com `Missing: ... from lock file`.
+O Astro exige Node 22.23.4 ou mais novo. O `package-lock.json` foi gerado com o npm 11.19, que grava as dependências opcionais de WebAssembly (`@emnapi/*`). Lockfiles gerados por versões mais antigas do npm não têm essas entradas, e o `npm ci` do servidor falha com `Missing: ... from lock file`. Se isso voltar a acontecer depois de instalar ou atualizar pacotes, regenere o lock com a mesma versão do npm do servidor:
+
+```bash
+npx npm@11.19.1 install --package-lock-only
+```
 
 Configuração no Coolify:
 
