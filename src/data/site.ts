@@ -42,7 +42,18 @@ export const navegacao: LinkNavegacao[] = [
   { rotulo: 'Ferramentas', href: '/#ferramentas' },
   { rotulo: 'Técnicas', href: '/#tecnicas' },
   { rotulo: 'Disciplina', href: '/#disciplina' },
+  { rotulo: 'Sobre mim', href: '/#sobre' },
 ];
+
+/** Seção "Sobre mim": só o que tem relação com o curso e a disciplina. */
+export const sobreMim = {
+  foto: '/midia/andre-honorato.webp',
+  fotoAlt: 'André Honorato, de camiseta preta e corrente prateada, sorrindo para a câmera.',
+  funcao: 'Sistemas para Internet',
+  /** Slug do trabalho favorito. */
+  favorito: 'jornal-acabou-de-acontecer',
+  porqueFavorito: 'Foi onde mais usei o que aprendi: chromakey, vinheta, clipe gerado no Veo e até erros de gravação nos créditos.',
+};
 
 /** Selo exibido no topo da home, apontando para o trabalho mais recente. */
 export const aviso = {

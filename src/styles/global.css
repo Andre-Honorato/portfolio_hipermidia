@@ -475,6 +475,35 @@
     transform: scaleY(1);
   }
 
+  /* Expansível (<details class="expansivel">): a altura é animada via script.
+     O estado visual segue [data-fechando] para trocar já no clique de fechar,
+     enquanto o atributo open só sai quando a animação termina. */
+  .expansivel .rotulo-aberto {
+    display: none;
+  }
+
+  .expansivel[open]:not([data-fechando]) .rotulo-aberto {
+    display: inline;
+  }
+
+  .expansivel[open]:not([data-fechando]) .rotulo-fechado {
+    display: none;
+  }
+
+  /* Fundo e cor ficam aqui (e não em utilitários na marcação) para o estado aberto
+     conseguir sobrescrevê-los: utilitários do Tailwind vencem a camada components. */
+  .expansivel .icone-alternar {
+    background: var(--surface-2);
+    color: var(--ink);
+    transition: rotate 0.5s var(--ease-out-soft), background-color 0.3s ease, color 0.3s ease;
+  }
+
+  .expansivel[open]:not([data-fechando]) .icone-alternar {
+    rotate: 45deg;
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
   /* ---------- Movimento ambiente (discreto) ---------- */
 
   .drift {
@@ -511,6 +540,16 @@
     background: var(--accent-text);
     box-shadow: 0 0 0 0 var(--accent-text);
     animation: live 2.4s ease-out infinite;
+  }
+
+  /* Luz de gravação: pisca como o REC de uma câmera. */
+  .rec-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: #4fb3c0;
+    box-shadow: 0 0 8px #4fb3c0;
+    animation: rec 1.2s steps(1, end) infinite;
   }
 
   .marquee {
@@ -750,6 +789,12 @@
   70%,
   100% {
     box-shadow: 0 0 0 8px transparent;
+  }
+}
+
+@keyframes rec {
+  50% {
+    opacity: 0.15;
   }
 }
 

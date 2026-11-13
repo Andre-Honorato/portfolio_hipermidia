@@ -33,7 +33,7 @@ const barras = Array.from({ length: 72 }, (_, i) => 0.18 + Math.abs(Math.sin(i *
             aria-label={`Reproduzir o vídeo: ${titulo}`}
           >
             {midia.poster ? (
-              <img src={midia.poster} alt="" width="1600" height="900" class="zoom-media w-full h-full object-cover" />
+              <img src={midia.poster} alt="" width="1600" height="900" fetchpriority="high" class="zoom-media w-full h-full object-cover" />
             ) : (
               <Art tom={tom} arte={arte} />
             )}

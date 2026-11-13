@@ -130,16 +130,38 @@ const imagemAbsoluta = new URL(imagem, Astro.site);
     <script>
       import AOS from 'aos';
 
+      const opcoesAos = { duration: 900, easing: 'ease-out-cubic', delay: 0 } as const;
+
       AOS.init({
-        duration: 900,
-        easing: 'ease-out-cubic',
+        ...opcoesAos,
         offset: 40,
         once: true,
+        // A troca de página é tratada abaixo, no astro:after-swap. O observador de DOM do
+        // AOS reagiria à troca do <body> antes disso e na ordem errada.
+        disableMutationObserver: true,
         disable: () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
       });
 
-      // Com o ClientRouter, a página nova chega sem recarregar: reescaneia os elementos.
-      document.addEventListener('astro:after-swap', () => AOS.refreshHard());
+      // Com o ClientRouter, a página nova chega sem recarregar e com um <body> novo.
+      document.addEventListener('astro:after-swap', () => {
+        // 1) O que já está na tela entra junto com o crossfade do ClientRouter. Animá-lo de
+        //    novo faria a página chegar vazia e o conteúdo subir só depois (~1 s de espera).
+        //    A rolagem já foi restaurada aqui. Isso vem antes de reaplicar a duração, para
+        //    que tirar o atributo não dispare uma transição.
+        const alturaTela = window.innerHeight;
+        document.querySelectorAll<HTMLElement>('[data-aos]').forEach((el) => {
+          const caixa = el.getBoundingClientRect();
+          if (caixa.top < alturaTela && caixa.bottom > 0) el.removeAttribute('data-aos');
+        });
+
+        // 2) O AOS guarda duração e easing em atributos do body (o CSS lê de lá); sem eles
+        //    a transição vira 0s e o que está abaixo da dobra "brota" ao rolar.
+        document.body.setAttribute('data-aos-duration', String(opcoesAos.duration));
+        document.body.setAttribute('data-aos-easing', opcoesAos.easing);
+        document.body.setAttribute('data-aos-delay', String(opcoesAos.delay));
+
+        AOS.refreshHard();
+      });
 
       // O roteador não decodifica âncoras com acento (ex.: #edição-no-audacity); rola até elas aqui.
       document.addEventListener('astro:page-load', () => {

@@ -3,24 +3,29 @@ import {
   ArrowDown,
   ArrowRight,
   ArrowUpRight,
+  AudioWaveform,
   BookOpen,
   CalendarDays,
   Clapperboard,
   Clock,
+  Code,
   GraduationCap,
   Headphones,
   Layers,
   Play,
   School,
+  Smartphone,
+  Star,
   User,
   Users,
 } from 'lucide-react';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Art from '../components/Art.astro';
 import WorkCard from '../components/WorkCard.astro';
 import EditorMock from '../components/EditorMock.astro';
 import Eyebrow from '../components/Eyebrow.astro';
 import Softwares from '../components/Softwares.astro';
-import { aviso, site, tecnicas } from '../data/site';
+import { aviso, site, sobreMim, tecnicas } from '../data/site';
 import { dataCompleta, listarTrabalhos, minutosTotais, numeroFormatado, rotuloTipo, urlTrabalho } from '../lib/trabalhos';
 import { colecaoLd, cursoLd, websiteLd } from '../lib/seo';
 
@@ -57,6 +62,35 @@ const fichaDisciplina = [
   { rotulo: 'Período', valor: `${site.periodo} · ${site.ano}`, icone: CalendarDays },
   { rotulo: 'Docentes', valor: site.docentes.join(' e '), icone: Users },
   { rotulo: 'Discente', valor: site.autor, icone: User },
+];
+
+const favorito = porSlug.get(sobreMim.favorito);
+
+const fichaSobre = [
+  {
+    rotulo: 'Antes da disciplina',
+    valor: 'Edição de vídeos por hobby',
+    detalhe: 'Cortes e montagens curtas para redes sociais.',
+    icone: Smartphone,
+  },
+  {
+    rotulo: 'Maior aprendizado no áudio',
+    valor: 'Tratamento de som no Audacity',
+    detalhe: 'Redução de ruído, equalização e Auto Duck.',
+    icone: AudioWaveform,
+  },
+  {
+    rotulo: 'Maior aprendizado no vídeo',
+    valor: 'Chromakey e efeitos no DaVinci',
+    detalhe: 'Fundo verde, vinheta e composição de cenas.',
+    icone: Layers,
+  },
+  {
+    rotulo: 'Onde quero usar',
+    valor: 'Front-end e produção de conteúdo',
+    detalhe: 'Mídia leve e acessível em sites, e vídeos para divulgar projetos.',
+    icone: Code,
+  },
 ];
 ---
 
@@ -295,6 +329,99 @@ const fichaDisciplina = [
       </div>
     </div>
   </section>
+
+  <!-- ============ Sobre mim ============ -->
+  <section id="sobre" aria-labelledby="titulo-sobre" class="frame section !pt-0">
+    <div class="grid grid-cols-1 gap-12 lg:grid-cols-[22rem_minmax(0,1fr)] lg:gap-16 xl:gap-24 items-center">
+      <!-- Retrato como um quadro de vídeo: arte da casa ao fundo e terço inferior.
+           A foto já vem recortada rente ao corpo e preenche a largura do quadro. -->
+      <figure class="card p-2 w-full max-w-[20rem] lg:max-w-none mx-auto" data-aos="fade-up">
+        <div class="relative overflow-hidden rounded-[calc(var(--radius-card)-0.375rem)] aspect-[9/16] bg-[#0b0b10]">
+          <div class="absolute inset-0" aria-hidden="true">
+            <Art tom="petroleo" arte="aurora" />
+          </div>
+          <img
+            src={sobreMim.foto}
+            alt={sobreMim.fotoAlt}
+            width="413"
+            height="849"
+            loading="lazy"
+            decoding="async"
+            class="absolute inset-0 w-full h-full object-cover object-top drop-shadow-[0_20px_40px_rgb(0_0_0/0.45)]"
+          />
+          <div class="absolute inset-x-3 top-3 flex items-center justify-between gap-2" aria-hidden="true">
+            <span class="chip glass"><span class="rec-dot"></span>REC</span>
+            <span class="chip glass font-mono text-xs tabular-nums" data-timecode>00:00:00:00</span>
+          </div>
+          <figcaption class="glass absolute inset-x-3 bottom-3 flex items-center gap-3 rounded-2xl p-3 pr-4">
+            <span class="w-1 self-stretch rounded-full bg-[#4fb3c0]" aria-hidden="true"></span>
+            <span class="min-w-0">
+              <span class="block font-semibold tracking-[-0.01em]">{site.autor}</span>
+              <span class="block text-xs text-white/70 mt-0.5 whitespace-nowrap truncate">{sobreMim.funcao} · {site.instituicaoSigla} {site.campus}</span>
+            </span>
+          </figcaption>
+        </div>
+      </figure>
+
+      <div class="flex flex-col gap-8 min-w-0">
+        <div data-aos="fade-up">
+          <Eyebrow cena={5} rotulo="Sobre mim" />
+          <h2 id="titulo-sobre" class="t-h2 mt-3">Quem fez estes trabalhos</h2>
+          <p class="t-lead mt-4">
+            {`Sou ${site.autor}, aluno do ${site.periodo} de ${site.curso} no ${site.instituicaoSigla} ${site.campus}. Antes da disciplina eu já editava vídeos para redes sociais, por hobby. Aqui aprendi a fazer isso com método: roteiro, captação, tratamento e finalização.`}
+          </p>
+        </div>
+
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          {
+            fichaSobre.map((item, i) => {
+              const Icone = item.icone;
+              return (
+                <div class="tile flex items-start gap-3 p-3.5" data-aos="fade-up" data-aos-delay={i * 50}>
+                  <span class="icon-box">
+                    <Icone className="w-[1.125rem] h-[1.125rem]" strokeWidth={1.75} aria-hidden="true" />
+                  </span>
+                  <div class="min-w-0">
+                    <dt class="text-xs text-ink-soft">{item.rotulo}</dt>
+                    <dd class="font-medium leading-snug">{item.valor}</dd>
+                    <dd class="text-sm text-ink-soft leading-snug mt-1">{item.detalhe}</dd>
+                  </div>
+                </div>
+              );
+            })
+          }
+        </dl>
+
+        {
+          favorito && (
+            <a
+              href={urlTrabalho(favorito)}
+              class="group card lift flex items-center gap-4 p-2 pr-5"
+              data-aos="fade-up"
+              data-aos-delay="100"
+            >
+              <span class="relative shrink-0 overflow-hidden rounded-[calc(var(--radius-card)-0.375rem)] w-28 sm:w-36 aspect-[16/10] bg-[#0b0b10]">
+                {favorito.data.midia.poster ? (
+                  <img src={favorito.data.midia.poster} alt="" width="288" height="180" loading="lazy" decoding="async" class="zoom-media w-full h-full object-cover" />
+                ) : (
+                  <Art tom={favorito.data.tom} arte={favorito.data.arte} />
+                )}
+              </span>
+              <span class="flex-1 min-w-0 py-1">
+                <span class="flex items-center gap-1.5 text-xs font-semibold text-accent-text">
+                  <Star className="w-3.5 h-3.5 fill-current" strokeWidth={1.75} aria-hidden="true" />
+                  Meu favorito<span class="hidden sm:inline"> · Trabalho {numeroFormatado(favorito.data.numero)}</span>
+                </span>
+                <span class="block font-semibold leading-snug mt-1">{favorito.data.titulo}</span>
+                <span class="hidden sm:block text-sm text-ink-soft leading-snug mt-1">{sobreMim.porqueFavorito}</span>
+              </span>
+              <ArrowUpRight className="arrow-go w-4 h-4 shrink-0 text-ink-soft" strokeWidth={2} aria-hidden="true" />
+            </a>
+          )
+        }
+      </div>
+    </div>
+  </section>
 </BaseLayout>
 
 <script>
@@ -327,5 +454,38 @@ const fichaDisciplina = [
         if (status) status.textContent = `${visiveis} ${visiveis === 1 ? 'trabalho exibido' : 'trabalhos exibidos'}`;
       });
     });
+
+    // Timecode do retrato (HH:MM:SS:QQ a 30 quadros/s): conta só enquanto o card está na tela.
+    const timecode = document.querySelector<HTMLElement>('[data-timecode]');
+    if (!timecode || semMovimento) return;
+    const doisDigitos = (n: number) => String(n).padStart(2, '0');
+    let acumulado = 0;
+    let inicio = 0;
+    let quadro = 0;
+    const desenhar = (agora: number) => {
+      const total = Math.floor(((acumulado + agora - inicio) / 1000) * 30);
+      const s = Math.floor(total / 30);
+      timecode.textContent = [Math.floor(s / 3600), Math.floor(s / 60) % 60, s % 60, total % 30].map(doisDigitos).join(':');
+      quadro = requestAnimationFrame(desenhar);
+    };
+    const observador = new IntersectionObserver(([entrada]) => {
+      if (entrada.isIntersecting && !quadro) {
+        inicio = performance.now();
+        quadro = requestAnimationFrame(desenhar);
+      } else if (!entrada.isIntersecting && quadro) {
+        cancelAnimationFrame(quadro);
+        quadro = 0;
+        acumulado += performance.now() - inicio;
+      }
+    });
+    observador.observe(timecode);
+    document.addEventListener(
+      'astro:before-swap',
+      () => {
+        observador.disconnect();
+        cancelAnimationFrame(quadro);
+      },
+      { once: true },
+    );
   });
 </script>
