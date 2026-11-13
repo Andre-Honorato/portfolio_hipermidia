@@ -3,7 +3,7 @@
 Portfólio dos trabalhos de André Honorato na disciplina Hipermídia e Multimídia (IFSP).
 Endereço: https://hipermidia.andrehonorato.com.br
 
-Stack: Astro 7 (site estático), ilhas React, Tailwind CSS 4, Inter e JetBrains Mono (Fontsource), AOS e lucide-react.
+Stack: Astro 7 (site estático, Node 22.23.4+), ilhas React, Tailwind CSS 4, Inter e JetBrains Mono (Fontsource), AOS e lucide-react.
 
 O visual imita uma ilha de edição. A interface é neutra (grafite no tema escuro, papel quente no claro), com azul-petróleo como única cor de destaque. Cada trabalho tem uma capa abstrata, as seções são numeradas como cenas ("Cena 01") e o topo da home mostra uma timeline em que cada clipe abre um trabalho. A referência de estilo foi o Screen Studio, encontrado no Refero.
 
@@ -94,8 +94,20 @@ Na página do trabalho, uma barra no topo mostra o progresso de leitura (CSS `an
 
 ## Deploy no Coolify
 
-1. Crie um recurso a partir do repositório Git, com Build Pack **Nixpacks**. O `nixpacks.toml` já fixa a versão dos pacotes.
-2. Marque **Is it a static site?**. Use `npm run build` como comando de build e `/dist` como diretório de publicação.
-3. Em **Domains**, informe `https://hipermidia.andrehonorato.com.br`.
-4. No DNS de `andrehonorato.com.br`, crie um registro `A` para `hipermidia` apontando para o IP da VPS. O Coolify emite o certificado HTTPS.
-5. Depois de publicar, envie `https://hipermidia.andrehonorato.com.br/sitemap-index.xml` no Google Search Console.
+O deploy usa o `Dockerfile` da raiz, em duas etapas:
+
+1. A imagem `node:24-alpine` (Node 24 com npm 11) roda `npm ci` e `npm run build`.
+2. Um `nginx:stable-alpine` serve a pasta `dist/` gerada, com a configuração de `nginx.conf`: URLs com barra final, página 404, gzip e cache longo para os arquivos com hash.
+
+O Astro exige Node 22.23.4 ou mais novo, e o `package-lock.json` foi gerado com npm 11. Com uma versão anterior, o `npm ci` falha com `Missing: ... from lock file`.
+
+Configuração no Coolify:
+
+1. Crie o recurso a partir do repositório Git e escolha o Build Pack **Dockerfile**.
+2. Deixe **Is it a static site?** desmarcado. O nginx já está dentro da imagem.
+3. Em **Ports Exposes**, use `80`.
+4. Em **Domains**, informe `https://hipermidia.andrehonorato.com.br`.
+5. No DNS de `andrehonorato.com.br`, crie um registro `A` para `hipermidia` apontando para o IP da VPS. O Coolify emite o certificado HTTPS.
+6. Depois de publicar, envie `https://hipermidia.andrehonorato.com.br/sitemap-index.xml` no Google Search Console.
+
+Para os vídeos tocarem no site, cada um precisa estar com **Permitir incorporação** ativado no YouTube Studio (Detalhes > Mostrar mais > Licença e distribuição).
