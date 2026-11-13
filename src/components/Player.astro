@@ -1,7 +1,7 @@
 ---
 import { Captions, Clapperboard, ExternalLink, Headphones, Maximize, Play, Volume2 } from 'lucide-react';
 import Art from './Art.astro';
-import { duracaoExtenso, numeroFormatado, rotuloTipo, type Trabalho } from '../lib/trabalhos';
+import { capaResponsiva, duracaoExtenso, numeroFormatado, rotuloTipo, type Trabalho } from '../lib/trabalhos';
 
 /**
  * Player acessível. Vídeos do YouTube aparecem como uma fachada (capa +
@@ -20,7 +20,7 @@ const legenda = `${rotuloTipo[tipo]} “${titulo}”, ${duracaoExtenso(duracao)}
 const barras = Array.from({ length: 72 }, (_, i) => 0.18 + Math.abs(Math.sin(i * 0.42 + numero) * Math.cos(i * 0.13)) * 0.82);
 ---
 
-<figure class="rounded-[var(--radius-panel)] bg-[#0b0b10] p-2 text-white shadow-[var(--shadow-lift)]" transition:name={`capa-${trabalho.id}`}>
+<figure data-ambiente class="rounded-[var(--radius-panel)] bg-[#0b0b10] p-2 text-white shadow-[var(--shadow-lift)]" transition:name={`capa-${trabalho.id}`}>
   {
     tipo === 'video' ? (
       midia.youtube ? (
@@ -33,7 +33,15 @@ const barras = Array.from({ length: 72 }, (_, i) => 0.18 + Math.abs(Math.sin(i *
             aria-label={`Reproduzir o vídeo: ${titulo}`}
           >
             {midia.poster ? (
-              <img src={midia.poster} alt="" width="1600" height="900" fetchpriority="high" class="zoom-media w-full h-full object-cover" />
+              <img
+                {...capaResponsiva(midia.poster)}
+                sizes="(min-width: 1920px) 1800px, (min-width: 1024px) calc(100vw - 7rem), calc(100vw - 3rem)"
+                alt=""
+                width="1600"
+                height="900"
+                fetchpriority="high"
+                class="zoom-media w-full h-full object-cover"
+              />
             ) : (
               <Art tom={tom} arte={arte} />
             )}
@@ -44,10 +52,12 @@ const barras = Array.from({ length: 72 }, (_, i) => 0.18 + Math.abs(Math.sin(i *
             >
               <Play className="w-7 h-7 fill-current translate-x-[2px]" strokeWidth={1.5} />
             </span>
-            <span class="absolute left-4 bottom-4 sm:left-6 sm:bottom-5 chip glass" aria-hidden="true">
-              <span class="tabular-nums">{duracao}</span> · YouTube
-            </span>
           </button>
+          {/* Selo fora do botão (por cima, sem receber clique) para o nome acessível do
+              botão não divergir do texto visível. Some junto com a fachada no clique. */}
+          <span data-yt-selo class="absolute left-4 bottom-4 sm:left-6 sm:bottom-5 chip glass pointer-events-none" aria-hidden="true">
+            <span class="tabular-nums">{duracao}</span> · YouTube
+          </span>
         </div>
       ) : midia.src ? (
         <video
@@ -168,6 +178,7 @@ const barras = Array.from({ length: 72 }, (_, i) => 0.18 + Math.abs(Math.sin(i *
     iframe.allowFullscreen = true;
     iframe.referrerPolicy = 'strict-origin-when-cross-origin';
     iframe.className = 'absolute inset-0 w-full h-full';
+    botao.parentElement?.querySelector('[data-yt-selo]')?.remove();
     botao.replaceWith(iframe);
     iframe.focus();
   });

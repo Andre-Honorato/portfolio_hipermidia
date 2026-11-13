@@ -9,7 +9,8 @@ export default defineConfig({
   // URLs com barra final batem com o que o servidor estático (nginx/Coolify)
   // entrega para pastas, evitando redirects e canônicas divergentes.
   trailingSlash: 'always',
-  build: { format: 'directory' },
+  // CSS embutido no HTML: sem requisição extra bloqueando a primeira pintura.
+  build: { format: 'directory', inlineStylesheets: 'always' },
   integrations: [
     react(),
     sitemap({

@@ -26,7 +26,7 @@ import EditorMock from '../components/EditorMock.astro';
 import Eyebrow from '../components/Eyebrow.astro';
 import Softwares from '../components/Softwares.astro';
 import { aviso, site, sobreMim, tecnicas } from '../data/site';
-import { dataCompleta, listarTrabalhos, minutosTotais, numeroFormatado, rotuloTipo, urlTrabalho } from '../lib/trabalhos';
+import { capaResponsiva, dataCompleta, listarTrabalhos, minutosTotais, numeroFormatado, rotuloTipo, urlTrabalho } from '../lib/trabalhos';
 import { colecaoLd, cursoLd, websiteLd } from '../lib/seo';
 
 const trabalhos = await listarTrabalhos();
@@ -139,7 +139,7 @@ const fichaSobre = [
       </div>
 
       <!-- Faixa rolante discreta -->
-      <div class="marquee-wrap overflow-hidden border-t border-hairline py-5" aria-hidden="true">
+      <div data-ambiente class="marquee-wrap overflow-hidden border-t border-hairline py-5" aria-hidden="true">
         <ul class="marquee">
           {
             [...palavras, ...palavras].map((p) => (
@@ -287,14 +287,14 @@ const fichaSobre = [
               fichaDisciplina.map((item, i) => {
                 const Icone = item.icone;
                 return (
-                  <div class="tile flex items-center gap-3 p-3.5" data-aos="fade-up" data-aos-delay={i * 50}>
-                    <span class="icon-box">
-                      <Icone className="w-[1.125rem] h-[1.125rem]" strokeWidth={1.75} aria-hidden="true" />
-                    </span>
-                    <div class="min-w-0">
-                      <dt class="text-xs text-ink-soft">{item.rotulo}</dt>
-                      <dd class="font-medium leading-snug">{item.valor}</dd>
-                    </div>
+                  <div class="tile relative flex flex-col justify-center min-h-[4.25rem] p-3.5 pl-[4.125rem]" data-aos="fade-up" data-aos-delay={i * 50}>
+                    <dt class="text-xs text-ink-soft">
+                      <span class="icon-box absolute left-3.5 top-1/2 -translate-y-1/2">
+                        <Icone className="w-[1.125rem] h-[1.125rem]" strokeWidth={1.75} aria-hidden="true" />
+                      </span>
+                      {item.rotulo}
+                    </dt>
+                    <dd class="font-medium leading-snug">{item.valor}</dd>
                   </div>
                 );
               })
@@ -377,15 +377,15 @@ const fichaSobre = [
             fichaSobre.map((item, i) => {
               const Icone = item.icone;
               return (
-                <div class="tile flex items-start gap-3 p-3.5" data-aos="fade-up" data-aos-delay={i * 50}>
-                  <span class="icon-box">
-                    <Icone className="w-[1.125rem] h-[1.125rem]" strokeWidth={1.75} aria-hidden="true" />
-                  </span>
-                  <div class="min-w-0">
-                    <dt class="text-xs text-ink-soft">{item.rotulo}</dt>
-                    <dd class="font-medium leading-snug">{item.valor}</dd>
-                    <dd class="text-sm text-ink-soft leading-snug mt-1">{item.detalhe}</dd>
-                  </div>
+                <div class="tile relative p-3.5 pl-[4.125rem]" data-aos="fade-up" data-aos-delay={i * 50}>
+                  <dt class="text-xs text-ink-soft">
+                    <span class="icon-box absolute left-3.5 top-3.5">
+                      <Icone className="w-[1.125rem] h-[1.125rem]" strokeWidth={1.75} aria-hidden="true" />
+                    </span>
+                    {item.rotulo}
+                  </dt>
+                  <dd class="font-medium leading-snug">{item.valor}</dd>
+                  <dd class="text-sm text-ink-soft leading-snug mt-1">{item.detalhe}</dd>
                 </div>
               );
             })
@@ -402,7 +402,16 @@ const fichaSobre = [
             >
               <span class="relative shrink-0 overflow-hidden rounded-[calc(var(--radius-card)-0.375rem)] w-28 sm:w-36 aspect-[16/10] bg-[#0b0b10]">
                 {favorito.data.midia.poster ? (
-                  <img src={favorito.data.midia.poster} alt="" width="288" height="180" loading="lazy" decoding="async" class="zoom-media w-full h-full object-cover" />
+                  <img
+                    {...capaResponsiva(favorito.data.midia.poster)}
+                    sizes="9rem"
+                    alt=""
+                    width="288"
+                    height="180"
+                    loading="lazy"
+                    decoding="async"
+                    class="zoom-media w-full h-full object-cover"
+                  />
                 ) : (
                   <Art tom={favorito.data.tom} arte={favorito.data.arte} />
                 )}

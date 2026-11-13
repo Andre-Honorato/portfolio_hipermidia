@@ -1,7 +1,7 @@
 ---
 import { ArrowUpRight, CalendarDays, Clapperboard, Headphones, Play } from 'lucide-react';
 import Art from './Art.astro';
-import { dataCompleta, duracaoExtenso, numeroFormatado, rotuloTipo, urlTrabalho, type Trabalho } from '../lib/trabalhos';
+import { capaResponsiva, dataCompleta, duracaoExtenso, numeroFormatado, rotuloTipo, urlTrabalho, type Trabalho } from '../lib/trabalhos';
 
 /**
  * Card de trabalho: capa (pôster real ou arte abstrata) com play em vidro
@@ -26,7 +26,16 @@ const IconeTipo = tipo === 'video' ? Clapperboard : Headphones;
       <div class="zoom-media absolute inset-0">
         {
           midia.poster ? (
-            <img src={midia.poster} alt="" width="800" height="500" loading="lazy" decoding="async" class="w-full h-full object-cover" />
+            <img
+              {...capaResponsiva(midia.poster)}
+              sizes="(min-width: 1024px) calc(33vw - 3rem), (min-width: 640px) calc(50vw - 3rem), calc(100vw - 3rem)"
+              alt=""
+              width="800"
+              height="500"
+              loading="lazy"
+              decoding="async"
+              class="w-full h-full object-cover"
+            />
           ) : (
             <Art tom={tom} arte={arte} />
           )

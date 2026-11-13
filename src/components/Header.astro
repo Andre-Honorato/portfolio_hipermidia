@@ -1,0 +1,186 @@
+---
+import { ArrowUpRight, Menu, Moon, Play, Sun, X } from 'lucide-react';
+import type { LinkNavegacao } from '../data/site';
+
+/**
+ * Cabeçalho fixo: marca, navegação, tema e menu móvel. HTML estático com um
+ * script pequeno (sem ilha de framework), para não carregar o runtime do React.
+ */
+interface Props {
+  links: LinkNavegacao[];
+  ativo?: string;
+  /** Destino do botão "Assistir". */
+  destaque: string;
+}
+
+const { links, ativo, destaque } = Astro.props;
+---
+
+<header class="sticky top-0 z-50 frame pt-3" data-cabecalho>
+  <div
+    data-cabecalho-caixa
+    class="rounded-2xl border bg-transparent border-transparent transition-[background-color,border-color,box-shadow] duration-500 data-[solido]:bg-surface/85 data-[solido]:backdrop-blur-xl data-[solido]:border-hairline data-[solido]:shadow-[0_12px_32px_-18px_rgb(0_0_0/0.35)]"
+  >
+    <div class="flex items-center gap-3 h-16 pl-3 pr-2 sm:pl-4">
+      <a href="/" class="group flex items-center gap-3 min-h-11 shrink-0 mr-auto">
+        <span
+          aria-hidden="true"
+          class="grid place-items-center w-9 h-9 rounded-[0.625rem] bg-accent text-on-accent shadow-[0_6px_16px_-6px_var(--accent)] transition-transform duration-500 ease-[var(--ease-out-soft)] group-hover:scale-105"
+        >
+          <Play className="w-4 h-4 fill-current translate-x-[1px]" strokeWidth={2} />
+        </span>
+        <span class="flex flex-col leading-none">
+          <span class="font-semibold text-[0.9375rem] tracking-[-0.01em]">André Honorato</span>
+          <span class="text-[0.75rem] font-medium text-ink-soft mt-1">Hipermídia e Multimídia</span>
+        </span>
+        <span class="sr-only">, página inicial</span>
+      </a>
+
+      <nav aria-label="Principal" class="hidden lg:block">
+        <ul class="flex items-center gap-1">
+          {
+            links.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  aria-current={ativo === link.rotulo ? 'page' : undefined}
+                  class="inline-flex items-center min-h-11 px-3.5 rounded-lg font-medium text-[0.9375rem] text-ink-soft transition-colors hover:text-ink hover:bg-surface-2 aria-[current=page]:text-ink"
+                >
+                  {link.rotulo}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+
+      <button
+        type="button"
+        data-alternar-tema
+        aria-label="Alternar tema claro e escuro"
+        title="Alternar tema claro e escuro"
+        class="shrink-0 grid place-items-center w-11 h-11 rounded-xl border border-hairline text-ink-soft hover:text-ink hover:bg-surface-2 transition-[color,background-color,transform] duration-300 active:scale-95"
+      >
+        <Sun className="w-[1.125rem] h-[1.125rem] hidden dark:block" strokeWidth={1.75} aria-hidden="true" />
+        <Moon className="w-[1.125rem] h-[1.125rem] dark:hidden" strokeWidth={1.75} aria-hidden="true" />
+      </button>
+
+      <a href={destaque} class="group btn btn-primary hidden sm:inline-flex min-h-11 h-11 px-4">
+        Assistir
+        <ArrowUpRight className="w-4 h-4 arrow-go" strokeWidth={2} aria-hidden="true" />
+      </a>
+
+      <button
+        type="button"
+        data-alternar-menu
+        aria-label="Abrir menu"
+        aria-controls="menu-movel"
+        aria-expanded="false"
+        class="group lg:hidden shrink-0 grid place-items-center w-11 h-11 rounded-xl border border-hairline active:scale-95 transition-transform"
+      >
+        <Menu className="w-5 h-5 group-aria-expanded:hidden" strokeWidth={2} aria-hidden="true" />
+        <X className="w-5 h-5 hidden group-aria-expanded:block" strokeWidth={2} aria-hidden="true" />
+      </button>
+    </div>
+
+    <div id="menu-movel" class="mobile-menu lg:hidden">
+      <nav aria-label="Principal (móvel)" class="overflow-hidden">
+        <ul class="grid gap-1.5 px-2 pb-2 pt-1">
+          {
+            links.map((link, indice) => (
+              <li class="mobile-menu-item" style={`--i:${indice}`}>
+                <a
+                  href={link.href}
+                  aria-current={ativo === link.rotulo ? 'page' : undefined}
+                  class="flex items-center justify-between gap-4 min-h-13 px-4 rounded-xl bg-surface-2 font-medium text-lg tracking-[-0.01em]"
+                >
+                  {link.rotulo}
+                  <ArrowUpRight className="w-4 h-4 text-ink-soft" strokeWidth={2} aria-hidden="true" />
+                </a>
+              </li>
+            ))
+          }
+          <li>
+            <a href={destaque} class="btn btn-primary w-full sm:hidden">
+              <Play className="w-4 h-4 fill-current" strokeWidth={2} aria-hidden="true" />
+              Assistir agora
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<script>
+  import { alternarTema, temaEscuroAtivo } from '../lib/theme';
+
+  // Com o ClientRouter o cabeçalho é trocado a cada página: liga tudo de novo e
+  // desfaz os ouvintes globais antes da troca.
+  document.addEventListener('astro:page-load', () => {
+    const caixa = document.querySelector<HTMLElement>('[data-cabecalho-caixa]');
+    const botaoTema = document.querySelector<HTMLButtonElement>('[data-alternar-tema]');
+    const botaoMenu = document.querySelector<HTMLButtonElement>('[data-alternar-menu]');
+    const menu = document.getElementById('menu-movel');
+    if (!caixa || !botaoTema || !botaoMenu || !menu) return;
+
+    const controle = new AbortController();
+    const { signal } = controle;
+    let menuAberto = false;
+
+    const atualizarFundo = () => {
+      caixa.toggleAttribute('data-solido', menuAberto || window.scrollY > 24);
+    };
+
+    const atualizarTema = () => {
+      const rotulo = temaEscuroAtivo() ? 'Ativar tema claro' : 'Ativar tema escuro';
+      botaoTema.setAttribute('aria-label', rotulo);
+      botaoTema.title = rotulo;
+    };
+
+    const definirMenu = (aberto: boolean) => {
+      menuAberto = aberto;
+      menu.classList.toggle('is-open', aberto);
+      botaoMenu.setAttribute('aria-expanded', String(aberto));
+      botaoMenu.setAttribute('aria-label', aberto ? 'Fechar menu' : 'Abrir menu');
+      atualizarFundo();
+    };
+
+    atualizarFundo();
+    atualizarTema();
+
+    window.addEventListener('scroll', atualizarFundo, { passive: true, signal });
+    botaoTema.addEventListener('click', () => {
+      alternarTema();
+      atualizarTema();
+    });
+    botaoMenu.addEventListener('click', () => definirMenu(!menuAberto));
+    menu.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => definirMenu(false)));
+
+    document.addEventListener(
+      'keydown',
+      (evento) => {
+        if (evento.key !== 'Escape' || !menuAberto) return;
+        definirMenu(false);
+        botaoMenu.focus();
+      },
+      { signal },
+    );
+
+    const telaLarga = window.matchMedia('(min-width: 1024px)');
+    telaLarga.addEventListener('change', (evento) => evento.matches && definirMenu(false), { signal });
+
+    // O tema também muda sem clique (preferência do sistema): mantém o rótulo certo.
+    const observador = new MutationObserver(atualizarTema);
+    observador.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+    document.addEventListener(
+      'astro:before-swap',
+      () => {
+        controle.abort();
+        observador.disconnect();
+      },
+      { once: true },
+    );
+  });
+</script>

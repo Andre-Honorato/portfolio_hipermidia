@@ -20,6 +20,20 @@ export function urlTrabalho(trabalho: Trabalho): string {
   return `/trabalhos/${trabalho.id}/`;
 }
 
+/**
+ * Capas em WebP nas larguras geradas por `npm run capas` (scripts/capas.mjs).
+ * Recebe o caminho do JPEG (`midia.poster`) e devolve `src` (960 px, para navegadores
+ * sem srcset) e `srcset`; quem usa informa `sizes`.
+ */
+export function capaResponsiva(poster: string): { src: string; srcset: string } {
+  const base = poster.replace(/\.jpe?g$/i, '');
+  const larguras = [480, 720, 960, 1280, 1600];
+  return {
+    src: `${base}-960.webp`,
+    srcset: larguras.map((largura) => `${base}-${largura}.webp ${largura}w`).join(', '),
+  };
+}
+
 const formatoData = new Intl.DateTimeFormat('pt-BR', {
   month: 'short',
   year: 'numeric',

@@ -3,7 +3,7 @@
 Portfólio dos trabalhos de André Honorato na disciplina Hipermídia e Multimídia (IFSP).
 Endereço: https://hipermidia.andrehonorato.com.br
 
-Stack: Astro 7 (site estático, Node 22.23.4+), ilhas React, Tailwind CSS 4, Inter e JetBrains Mono (Fontsource), AOS e lucide-react.
+Stack: Astro 7 (site estático, Node 22.23.4+), Tailwind CSS 4, Inter e JetBrains Mono (Fontsource), AOS e lucide-react. O React é usado só no build, para renderizar os ícones do lucide-react; nenhuma página carrega JavaScript do React.
 
 O visual imita uma ilha de edição. A interface é neutra (grafite no tema escuro, papel quente no claro), com azul-petróleo como única cor de destaque. Cada trabalho tem uma capa abstrata, as seções são numeradas como cenas ("Cena 01") e o topo da home mostra uma timeline em que cada clipe abre um trabalho. A referência de estilo foi o Screen Studio, encontrado no Refero.
 
@@ -45,7 +45,11 @@ transcricao: |
 …
 ```
 
-Os vídeos ficam no YouTube (não listados). A página mostra a capa com um botão de play, e o player do YouTube (domínio youtube-nocookie) só carrega quando alguém clica. O áudio e as capas ficam em `public/midia/`. Capas devem ser 16:9; as atuais têm 1600×900 em JPEG.
+Os vídeos ficam no YouTube (não listados). A página mostra a capa com um botão de play, e o player do YouTube (domínio youtube-nocookie) só carrega quando alguém clica. O áudio e as capas ficam em `public/midia/`. Capas devem ser 16:9; as atuais têm 1600×900 em JPEG. Depois de adicionar ou trocar uma capa, gere as versões WebP usadas nos cards e no player (480 a 1600 px). O JPEG continua sendo a imagem de compartilhamento em redes sociais.
+
+```bash
+npm run capas
+```
 
 Se você mudar o schema em `src/content.config.ts` e o `npm run dev` continuar mostrando dados antigos, limpe o cache de conteúdo:
 

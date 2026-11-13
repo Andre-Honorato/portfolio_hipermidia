@@ -30,7 +30,7 @@ const trilha = (cor: string) =>
   `background:color-mix(in srgb, ${cor} 55%, #15171c);border-color:color-mix(in srgb, ${cor} 75%, #ffffff)`;
 ---
 
-<div class="rounded-[1.5rem] bg-[#0e1013] p-2 shadow-[var(--shadow-lift)] ring-1 ring-white/10 text-white">
+<div data-ambiente class="rounded-[1.5rem] bg-[#0e1013] p-2 shadow-[var(--shadow-lift)] ring-1 ring-white/10 text-white">
   <!-- Barra de título -->
   <div class="flex items-center gap-2 px-2.5 pb-2 pt-1" aria-hidden="true">
     <span class="w-2.5 h-2.5 rounded-full bg-white/20"></span>
@@ -43,25 +43,29 @@ const trilha = (cor: string) =>
   <!-- Visor -->
   {
     destaque && (
-      <a
-        href={urlTrabalho(destaque)}
-        class="group relative block overflow-hidden rounded-[1.0625rem] aspect-video"
-        aria-label={`Assistir o trabalho ${numeroFormatado(destaque.data.numero)}: ${destaque.data.titulo}`}
-      >
-        <div class="zoom-media absolute inset-0">
-          <Art tom={destaque.data.tom} arte={destaque.data.arte} />
-        </div>
-        <span class="play-btn glass absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 grid place-items-center w-16 h-16 rounded-full" aria-hidden="true">
-          <Play className="w-6 h-6 fill-current translate-x-[2px]" strokeWidth={1.5} />
-        </span>
-        <span class="glass chip absolute left-3 top-3 text-[0.7rem]" aria-hidden="true">
+      <div class="relative">
+        {/* Os selos ficam fora do link (por cima, sem receber clique) para o nome
+            acessível do link não divergir do texto visível dentro dele. */}
+        <a
+          href={urlTrabalho(destaque)}
+          class="group relative block overflow-hidden rounded-[1.0625rem] aspect-video"
+          aria-label={`Assistir o trabalho ${numeroFormatado(destaque.data.numero)}: ${destaque.data.titulo}`}
+        >
+          <div class="zoom-media absolute inset-0">
+            <Art tom={destaque.data.tom} arte={destaque.data.arte} />
+          </div>
+          <span class="play-btn glass absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 grid place-items-center w-16 h-16 rounded-full" aria-hidden="true">
+            <Play className="w-6 h-6 fill-current translate-x-[2px]" strokeWidth={1.5} />
+          </span>
+        </a>
+        <span class="glass chip absolute left-3 top-3 text-[0.7rem] pointer-events-none" aria-hidden="true">
           <span class="live-dot"></span>
           Visualizador
         </span>
-        <span class="absolute left-3 bottom-3 font-mono text-[0.7rem] text-white/80" aria-hidden="true">
+        <span class="absolute left-3 bottom-3 font-mono text-[0.7rem] text-white/80 pointer-events-none" aria-hidden="true">
           V1 · {numeroFormatado(destaque.data.numero)}
         </span>
-      </a>
+      </div>
     )
   }
 
@@ -93,7 +97,12 @@ const trilha = (cor: string) =>
                       href={urlTrabalho(t)}
                       class="group flex items-center gap-2 h-full px-2 rounded-md border text-[0.7rem] font-medium overflow-hidden transition-[filter,transform] duration-300 hover:brightness-125 hover:-translate-y-px"
                       style={trilha(cor)}
-                      aria-label={`Trabalho ${numeroFormatado(t.data.numero)}, ${rotuloTipo[t.data.tipo]}: ${t.data.titulo}`}
+                      aria-label={
+                        // O clipe de áudio só mostra a onda: precisa de nome. Os de vídeo usam o texto visível.
+                        t.data.tipo === 'audio'
+                          ? `Trabalho ${numeroFormatado(t.data.numero)}, ${rotuloTipo[t.data.tipo]}: ${t.data.titulo}`
+                          : undefined
+                      }
                     >
                       {t.data.tipo === 'audio' ? (
                         <span class="flex items-center gap-px h-full py-1.5 flex-1 min-w-0" aria-hidden="true">
@@ -102,8 +111,9 @@ const trilha = (cor: string) =>
                           ))}
                         </span>
                       ) : (
-                        <span class="truncate" aria-hidden="true">
+                        <span class="truncate">
                           {numeroFormatado(t.data.numero)} · {t.data.titulo}
+                          <span class="sr-only">, {rotuloTipo[t.data.tipo]}</span>
                         </span>
                       )}
                     </a>
@@ -125,8 +135,10 @@ const trilha = (cor: string) =>
 
     <!-- Agulha de reprodução sobre as trilhas -->
     <div class="relative h-0 ml-[2.75rem]" aria-hidden="true">
-      <span class="playhead absolute bottom-0 w-px h-[9.5rem] bg-accent-text">
-        <span class="absolute -top-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rotate-45 bg-accent-text rounded-[2px]"></span>
+      <span class="playhead">
+        <span class="absolute bottom-0 left-0 w-px h-[9.5rem] bg-accent-text">
+          <span class="absolute -top-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rotate-45 bg-accent-text rounded-[2px]"></span>
+        </span>
       </span>
     </div>
   </nav>
